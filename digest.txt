@@ -1,0 +1,1147 @@
+Directory structure:
+└── AI Software Compiler/
+    └── backend/
+        ├── README.md
+        ├── requirements.txt
+        └── app/
+            ├── main.py
+            ├── core/
+            │   ├── config.py
+            │   ├── database.py
+            │   └── logging.py
+            ├── evaluation/
+            │   ├── dataset.py
+            │   ├── metrics.py
+            │   └── runner.py
+            ├── pipeline/
+            │   ├── architecture_planner.py
+            │   ├── intent_extractor.py
+            │   ├── orchestrator.py
+            │   ├── repair_engine.py
+            │   ├── runtime_executor.py
+            │   ├── schema_generator.py
+            │   └── validator.py
+            ├── prompts/
+            │   ├── intent_prompt.py
+            │   ├── planner_prompt.py
+            │   ├── repair_prompt.py
+            │   └── schema_prompt.py
+            ├── routes/
+            │   └── generate.py
+            ├── runtime/
+            │   └── sqlite_runtime.py
+            ├── schemas/
+            │   ├── api_schema.py
+            │   ├── architecture_schema.py
+            │   ├── auth_schema.py
+            │   ├── db_schema.py
+            │   ├── final_output_schema.py
+            │   ├── intent_schema.py
+            │   └── ui_schema.py
+            ├── services/
+            │   ├── gemini_service.py
+            │   ├── json_parser.py
+            │   └── supabase_service.py
+            └── utils/
+                ├── consistency.py
+                ├── helpers.py
+                └── retry.py
+
+================================================
+FILE: backend/README.md
+================================================
+[Empty file]
+
+
+================================================
+FILE: backend/requirements.txt
+================================================
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+google-generativeai
+python-dotenv
+supabase
+sqlalchemy
+orjson
+
+
+================================================
+FILE: backend/app/main.py
+================================================
+from fastapi import FastAPI
+
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.routes.generate import router
+
+
+app = FastAPI(
+    title="AI Compiler System"
+)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+app.include_router(router)
+
+
+@app.get("/")
+def home():
+
+    return {
+        "status": "running"
+    }
+
+
+================================================
+FILE: backend/app/core/config.py
+================================================
+from pydantic_settings import BaseSettings
+
+
+class Settings(BaseSettings):
+
+    GEMINI_API_KEY: str
+    MODEL_NAME: str
+
+    SUPABASE_URL: str
+    SUPABASE_KEY: str
+
+    class Config:
+        env_file = ".env"
+
+
+settings = Settings()
+
+
+================================================
+FILE: backend/app/core/database.py
+================================================
+[Empty file]
+
+
+================================================
+FILE: backend/app/core/logging.py
+================================================
+[Empty file]
+
+
+================================================
+FILE: backend/app/evaluation/dataset.py
+================================================
+[Empty file]
+
+
+================================================
+FILE: backend/app/evaluation/metrics.py
+================================================
+[Empty file]
+
+
+================================================
+FILE: backend/app/evaluation/runner.py
+================================================
+[Empty file]
+
+
+================================================
+FILE: backend/app/pipeline/architecture_planner.py
+================================================
+import json
+
+from app.services.gemini_service import gemini_service
+
+from app.schemas.architecture_schema import (
+    ArchitectureSchema
+)
+
+
+class ArchitecturePlanner:
+
+    def run(self, intent):
+
+        prompt = f"""
+You are a software architecture planner.
+
+Convert the intent into STRICT JSON.
+
+You MUST return ONLY valid JSON.
+
+Do NOT return markdown.
+Do NOT return explanations.
+Do NOT add extra keys.
+
+Required JSON structure:
+
+{{
+  "entities": [
+    {{
+      "name": "string",
+      "fields": ["string"]
+    }}
+  ],
+  "pages": ["string"],
+  "modules": ["string"],
+  "roles": ["string"]
+}}
+
+Rules:
+- entities = database/business entities
+- fields = important entity fields
+- pages = frontend pages
+- modules = backend modules/features
+- roles = user roles
+
+Intent:
+{intent.model_dump_json(indent=2)}
+"""
+
+        response = gemini_service.generate_json(
+            prompt
+        )
+
+        print("\nRAW ARCHITECTURE RESPONSE:\n")
+        print(response)
+
+        parsed = json.loads(response)
+
+        validated = ArchitectureSchema(
+            **parsed
+        )
+
+        return validated
+
+
+================================================
+FILE: backend/app/pipeline/intent_extractor.py
+================================================
+import json
+
+from app.services.gemini_service import gemini_service
+
+from app.schemas.intent_schema import IntentSchema
+
+from app.prompts.intent_prompt import INTENT_PROMPT
+
+
+class IntentExtractor:
+
+    def run(self, user_prompt: str):
+
+        prompt = INTENT_PROMPT.format(
+            user_prompt=user_prompt
+        )
+
+        response = gemini_service.generate_json(
+            prompt
+        )
+
+        print("\nRAW GEMINI RESPONSE:\n")
+        print(response)
+
+        parsed = json.loads(response)
+
+        validated = IntentSchema(**parsed)
+
+        return validated
+
+
+================================================
+FILE: backend/app/pipeline/orchestrator.py
+================================================
+from app.pipeline.intent_extractor import IntentExtractor
+
+from app.pipeline.architecture_planner import ArchitecturePlanner
+
+from app.pipeline.schema_generator import SchemaGenerator
+
+from app.pipeline.validator import SchemaValidator
+
+from app.pipeline.repair_engine import RepairEngine
+
+from app.runtime.sqlite_runtime import SQLiteRuntime
+
+from app.services.supabase_service import supabase
+
+
+class PipelineOrchestrator:
+
+    def __init__(self):
+
+        self.intent_extractor = IntentExtractor()
+
+        self.architecture_planner = ArchitecturePlanner()
+
+        self.schema_generator = SchemaGenerator()
+
+        self.validator = SchemaValidator()
+
+        self.repair_engine = RepairEngine()
+
+        self.runtime = SQLiteRuntime()
+
+    def run(self, user_prompt: str):
+
+        # =========================
+        # 1. INTENT EXTRACTION
+        # =========================
+
+        intent = self.intent_extractor.run(
+            user_prompt
+        )
+
+        # =========================
+        # 2. ARCHITECTURE PLANNING
+        # =========================
+
+        architecture = self.architecture_planner.run(
+            intent
+        )
+
+        # =========================
+        # 3. SCHEMA GENERATION
+        # =========================
+
+        schemas = self.schema_generator.generate_all_schemas(
+            architecture
+        )
+
+        db_schema = schemas["database_schema"]
+
+        api_schema = schemas["api_schema"]
+
+        auth_schema = schemas["auth_schema"]
+
+        # Generate UI separately
+        ui_schema = self.schema_generator.generate_ui_schema(
+            architecture
+        )
+
+        # =========================
+        # 4. VALIDATION
+        # =========================
+
+        validation_errors = self.validator.validate(
+            database_schema=db_schema,
+            api_schema=api_schema,
+            ui_schema=ui_schema,
+            auth_schema=auth_schema
+        )
+
+        # =========================
+        # 5. REPAIR ENGINE
+        # =========================
+
+        repaired = False
+
+        if validation_errors:
+
+            repaired = True
+
+            api_schema = self.repair_engine.repair_api_schema(
+                api_schema,
+                db_schema
+            )
+
+            # Re-run validation after repair
+            validation_errors = self.validator.validate(
+                database_schema=db_schema,
+                api_schema=api_schema,
+                ui_schema=ui_schema,
+                auth_schema=auth_schema
+            )
+
+        # =========================
+        # 6. RUNTIME EXECUTION
+        # =========================
+
+        runtime_status = "success"
+
+        try:
+
+            self.runtime.create_database(
+                db_schema
+            )
+
+        except Exception as e:
+
+            runtime_status = f"failed: {str(e)}"
+
+        # =========================
+        # 7. SAVE TO SUPABASE
+        # =========================
+
+        supabase.table(
+            "generated_apps"
+        ).insert({
+
+            "prompt": user_prompt,
+
+            "intent": intent.model_dump(),
+
+            "architecture": architecture.model_dump(),
+
+            "database_schema": db_schema.model_dump(),
+
+            "api_schema": api_schema.model_dump(),
+
+            "ui_schema": ui_schema.model_dump(),
+
+            "auth_schema": auth_schema.model_dump(),
+
+            "validation_errors": validation_errors,
+
+            "repair_applied": repaired
+
+        }).execute()
+
+        # =========================
+        # 8. FINAL RESPONSE
+        # =========================
+
+        return {
+
+            "intent": intent.model_dump(),
+
+            "architecture": architecture.model_dump(),
+
+            "database": db_schema.model_dump(),
+
+            "api": api_schema.model_dump(),
+
+            "ui": ui_schema.model_dump(),
+
+            "auth": auth_schema.model_dump(),
+
+            "validation_errors": validation_errors,
+
+            "repair_applied": repaired,
+
+            "runtime_status": runtime_status
+        }
+
+
+================================================
+FILE: backend/app/pipeline/repair_engine.py
+================================================
+class RepairEngine:
+
+    def repair_api_schema(
+        self,
+        api_schema,
+        db_schema
+    ):
+
+        valid_fields = set()
+
+        for table in db_schema.tables:
+            for column in table.columns:
+                valid_fields.add(column.name)
+
+        for endpoint in api_schema.endpoints:
+
+            endpoint.request_fields = [
+                field
+                for field in endpoint.request_fields
+                if field in valid_fields
+            ]
+
+        return api_schema
+
+
+================================================
+FILE: backend/app/pipeline/runtime_executor.py
+================================================
+[Empty file]
+
+
+================================================
+FILE: backend/app/pipeline/schema_generator.py
+================================================
+import json
+
+from app.services.gemini_service import gemini_service
+
+from app.schemas.db_schema import DatabaseSchema
+from app.schemas.api_schema import APISchema
+from app.schemas.ui_schema import UISchema
+from app.schemas.auth_schema import AuthSchema
+
+
+class SchemaGenerator:
+
+    def generate_all_schemas(self, architecture):
+
+        prompt = f"""
+You are a software schema generator.
+
+Generate ALL schemas together.
+
+Return ONLY valid JSON.
+
+Do NOT return markdown.
+Do NOT return explanations.
+Do NOT add extra keys.
+
+Required JSON structure:
+
+{{
+  "database_schema": {{
+    "tables": [
+      {{
+        "table_name": "string",
+        "columns": [
+          {{
+            "name": "string",
+            "type": "TEXT",
+            "required": true
+          }}
+        ]
+      }}
+    ]
+  }},
+
+  "api_schema": {{
+    "endpoints": [
+      {{
+        "path": "string",
+        "method": "GET",
+        "request_fields": ["string"],
+        "response_fields": ["string"]
+      }}
+    ]
+  }},
+
+  "ui_schema": {{
+    "pages": [
+      {{
+        "name": "string",
+        "components": [
+          {{
+            "type": "string",
+            "props": {{}}
+          }}
+        ]
+      }}
+    ]
+  }},
+
+  "auth_schema": {{
+    "roles": ["string"],
+    "permissions": [
+      {{
+        "role": "string",
+        "allowed_routes": ["string"]
+      }}
+    ]
+  }}
+}}
+
+Architecture:
+{architecture.model_dump_json(indent=2)}
+"""
+
+        response = gemini_service.generate_json(
+            prompt
+        )
+
+        print("\nRAW COMBINED SCHEMA RESPONSE:\n")
+        print(response)
+
+        parsed = json.loads(response)
+
+        database_schema = DatabaseSchema(
+            **parsed["database_schema"]
+        )
+
+        api_schema = APISchema(
+            **parsed["api_schema"]
+        )
+
+        ui_schema = UISchema(
+            **parsed["ui_schema"]
+        )
+
+        auth_schema = AuthSchema(
+            **parsed["auth_schema"]
+        )
+
+        return {
+            "database_schema": database_schema,
+            "api_schema": api_schema,
+            "ui_schema": ui_schema,
+            "auth_schema": auth_schema
+        }
+
+
+================================================
+FILE: backend/app/pipeline/validator.py
+================================================
+class SchemaValidator:
+
+    def validate(
+        self,
+        database_schema,
+        api_schema,
+        ui_schema,
+        auth_schema
+    ):
+
+        errors = []
+
+        errors.extend(
+            self.validate_database(
+                database_schema
+            )
+        )
+
+        errors.extend(
+            self.validate_api_vs_db(
+                database_schema,
+                api_schema
+            )
+        )
+
+        errors.extend(
+            self.validate_auth_vs_api(
+                api_schema,
+                auth_schema
+            )
+        )
+
+        errors.extend(
+            self.validate_ui_vs_api(
+                ui_schema,
+                api_schema
+            )
+        )
+
+        return errors
+
+    def validate_database(
+        self,
+        database_schema
+    ):
+
+        errors = []
+
+        for table in database_schema.tables:
+
+            column_names = [
+                column.name
+                for column in table.columns
+            ]
+
+            if "id" not in column_names:
+
+                errors.append(
+                    f"{table.table_name} missing id field"
+                )
+
+        return errors
+
+    def validate_api_vs_db(
+        self,
+        database_schema,
+        api_schema
+    ):
+
+        errors = []
+
+        db_fields = set()
+
+        for table in database_schema.tables:
+
+            for column in table.columns:
+
+                db_fields.add(
+                    column.name
+                )
+
+        for endpoint in api_schema.endpoints:
+
+            for field in endpoint.request_fields:
+
+                if (
+                    field not in db_fields
+                    and field != "password"
+                ):
+
+                    errors.append(
+                        f"API request field '{field}' not found in DB schema"
+                    )
+
+            for field in endpoint.response_fields:
+
+                if (
+                    field not in db_fields
+                    and field not in ["token", "message", "data"]
+                ):
+
+                    errors.append(
+                        f"API response field '{field}' not found in DB schema"
+                    )
+
+        return errors
+
+    def validate_auth_vs_api(
+        self,
+        api_schema,
+        auth_schema
+    ):
+
+        errors = []
+
+        api_routes = set()
+
+        for endpoint in api_schema.endpoints:
+
+            api_routes.add(
+                endpoint.path
+            )
+
+        for permission in auth_schema.permissions:
+
+            for route in permission.allowed_routes:
+
+                if route not in api_routes:
+
+                    errors.append(
+                        f"Auth route '{route}' does not exist in API schema"
+                    )
+
+        return errors
+
+    def validate_ui_vs_api(
+        self,
+        ui_schema,
+        api_schema
+    ):
+
+        errors = []
+
+        api_routes = [
+            endpoint.path
+            for endpoint in api_schema.endpoints
+        ]
+
+        has_contacts_api = any(
+            "/contacts" in route
+            for route in api_routes
+        )
+
+        for page in ui_schema.pages:
+
+            if (
+                "Contact" in page.name
+                and not has_contacts_api
+            ):
+
+                errors.append(
+                    "UI references contacts but contacts API missing"
+                )
+
+        return errors
+
+
+================================================
+FILE: backend/app/prompts/intent_prompt.py
+================================================
+INTENT_PROMPT = """
+You are an intent extraction engine.
+
+Convert the user request into STRICT JSON.
+
+You MUST return ONLY valid JSON.
+
+Do NOT return markdown.
+Do NOT return explanation.
+Do NOT add extra keys.
+
+Required JSON structure:
+
+{{
+  "app_name": "string",
+  "app_type": "string",
+  "features": ["string"],
+  "user_roles": ["string"]
+}}
+
+Rules:
+- app_name = short application name
+- app_type = category like CRM, LMS, Ecommerce
+- features = list of requested features
+- user_roles = list of user roles
+
+User Request:
+{user_prompt}
+"""
+
+
+================================================
+FILE: backend/app/prompts/planner_prompt.py
+================================================
+[Empty file]
+
+
+================================================
+FILE: backend/app/prompts/repair_prompt.py
+================================================
+[Empty file]
+
+
+================================================
+FILE: backend/app/prompts/schema_prompt.py
+================================================
+[Empty file]
+
+
+================================================
+FILE: backend/app/routes/generate.py
+================================================
+from fastapi import APIRouter
+
+from pydantic import BaseModel
+
+from app.pipeline.orchestrator import (
+    PipelineOrchestrator
+)
+
+
+router = APIRouter()
+
+pipeline = PipelineOrchestrator()
+
+
+class PromptRequest(BaseModel):
+
+    prompt: str
+
+
+@router.post("/generate")
+def generate(request: PromptRequest):
+
+    return pipeline.run(request.prompt)
+
+
+================================================
+FILE: backend/app/runtime/sqlite_runtime.py
+================================================
+import sqlite3
+import os
+
+
+class SQLiteRuntime:
+
+    def create_database(self, db_schema):
+
+        os.makedirs(
+            "generated",
+            exist_ok=True
+        )
+
+        connection = sqlite3.connect(
+            "generated/generated_app.db"
+        )
+
+        cursor = connection.cursor()
+
+        for table in db_schema.tables:
+
+            columns = []
+
+            for column in table.columns:
+
+                # Prevent duplicate id column
+                if column.name.lower() == "id":
+                    continue
+
+                sql_type = column.type.upper()
+
+                if sql_type not in [
+                    "TEXT",
+                    "INTEGER",
+                    "BOOLEAN"
+                ]:
+                    sql_type = "TEXT"
+
+                columns.append(
+                    f"{column.name} {sql_type}"
+                )
+
+            query = f"""
+            CREATE TABLE IF NOT EXISTS
+            {table.table_name}
+            (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                {",".join(columns)}
+            )
+            """
+
+            print("\nSQL QUERY:\n")
+            print(query)
+
+            cursor.execute(query)
+
+        connection.commit()
+
+        connection.close()
+
+
+================================================
+FILE: backend/app/schemas/api_schema.py
+================================================
+from pydantic import BaseModel
+from typing import List
+
+
+class EndpointSchema(BaseModel):
+
+    path: str
+    method: str
+
+    request_fields: List[str]
+
+    response_fields: List[str]
+
+
+class APISchema(BaseModel):
+
+    endpoints: List[EndpointSchema]
+
+
+================================================
+FILE: backend/app/schemas/architecture_schema.py
+================================================
+from pydantic import BaseModel
+from typing import List
+
+
+class EntitySchema(BaseModel):
+
+    name: str
+    fields: List[str]
+
+
+class ArchitectureSchema(BaseModel):
+
+    entities: List[EntitySchema]
+
+    pages: List[str]
+
+    modules: List[str]
+
+    roles: List[str]
+
+
+================================================
+FILE: backend/app/schemas/auth_schema.py
+================================================
+from pydantic import BaseModel
+from typing import List
+
+
+class PermissionSchema(BaseModel):
+
+    role: str
+
+    allowed_routes: List[str]
+
+
+class AuthSchema(BaseModel):
+
+    roles: List[str]
+
+    permissions: List[PermissionSchema]
+
+
+================================================
+FILE: backend/app/schemas/db_schema.py
+================================================
+from pydantic import BaseModel
+from typing import List
+
+
+class ColumnSchema(BaseModel):
+
+    name: str
+    type: str
+    required: bool
+
+
+class TableSchema(BaseModel):
+
+    table_name: str
+
+    columns: List[ColumnSchema]
+
+
+class DatabaseSchema(BaseModel):
+
+    tables: List[TableSchema]
+
+
+================================================
+FILE: backend/app/schemas/final_output_schema.py
+================================================
+[Empty file]
+
+
+================================================
+FILE: backend/app/schemas/intent_schema.py
+================================================
+from pydantic import BaseModel
+from typing import List
+
+
+class IntentSchema(BaseModel):
+
+    app_name: str
+    app_type: str
+
+    features: List[str]
+
+    user_roles: List[str]
+
+
+================================================
+FILE: backend/app/schemas/ui_schema.py
+================================================
+from pydantic import BaseModel
+from typing import List
+
+
+class ComponentSchema(BaseModel):
+
+    type: str
+
+    props: dict
+
+
+class PageSchema(BaseModel):
+
+    name: str
+
+    components: List[ComponentSchema]
+
+
+class UISchema(BaseModel):
+
+    pages: List[PageSchema]
+
+
+================================================
+FILE: backend/app/services/gemini_service.py
+================================================
+import time
+
+import google.generativeai as genai
+
+from app.core.config import settings
+
+
+genai.configure(
+    api_key=settings.GEMINI_API_KEY
+)
+
+
+class GeminiService:
+
+    def __init__(self):
+
+        self.model = genai.GenerativeModel(
+            settings.MODEL_NAME
+        )
+
+    def generate_json(
+        self,
+        prompt: str,
+        retries: int = 3
+    ):
+
+        attempt = 0
+
+        while attempt < retries:
+
+            try:
+
+                response = self.model.generate_content(
+                    prompt,
+                    generation_config={
+                        "temperature": 0,
+                        "response_mime_type": "application/json"
+                    }
+                )
+
+                return response.text
+
+            except Exception as e:
+
+                print("\nGEMINI ERROR:\n")
+                print(str(e))
+
+                attempt += 1
+
+                if attempt >= retries:
+                    raise Exception(
+                        f"Gemini failed after {retries} retries"
+                    )
+
+                wait_time = 5 * attempt
+
+                print(
+                    f"\nRetrying in {wait_time} seconds...\n"
+                )
+
+                time.sleep(wait_time)
+
+
+gemini_service = GeminiService()
+
+
+================================================
+FILE: backend/app/services/json_parser.py
+================================================
+[Empty file]
+
+
+================================================
+FILE: backend/app/services/supabase_service.py
+================================================
+from supabase import create_client
+
+from app.core.config import settings
+
+
+supabase = create_client(
+    settings.SUPABASE_URL,
+    settings.SUPABASE_KEY
+)
+
+
+================================================
+FILE: backend/app/utils/consistency.py
+================================================
+[Empty file]
+
+
+================================================
+FILE: backend/app/utils/helpers.py
+================================================
+[Empty file]
+
+
+================================================
+FILE: backend/app/utils/retry.py
+================================================
+[Empty file]
+
