@@ -97,4 +97,18 @@ Rules:
 
         response = gemini_service.generate_json(prompt)
 
-        return json.loads(response)
+        cleaned = (
+            response
+            .replace("```json", "")
+            .replace("```", "")
+            .strip()
+        )
+
+        result = json.loads(cleaned)
+
+        # Inject fake invalid field for testing
+        result["api"]["endpoints"][0]["request_fields"].append(
+            "fake_field_xyz"
+        )
+
+        return result

@@ -13,4 +13,4 @@ class Contacts(Base):
     email = Column(String)
     phone = Column(String)
     company = Column(String)
-    user_id = Column(String)
+    created_by_user_id = Column(String)
