@@ -3,49 +3,75 @@ Directory structure:
     └── backend/
         ├── README.md
         ├── requirements.txt
-        └── app/
-            ├── main.py
-            ├── core/
-            │   ├── config.py
-            │   ├── database.py
-            │   └── logging.py
-            ├── evaluation/
-            │   ├── dataset.py
-            │   ├── metrics.py
-            │   └── runner.py
-            ├── pipeline/
-            │   ├── architecture_planner.py
-            │   ├── intent_extractor.py
-            │   ├── orchestrator.py
-            │   ├── repair_engine.py
-            │   ├── runtime_executor.py
-            │   ├── schema_generator.py
-            │   └── validator.py
-            ├── prompts/
-            │   ├── intent_prompt.py
-            │   ├── planner_prompt.py
-            │   ├── repair_prompt.py
-            │   └── schema_prompt.py
-            ├── routes/
-            │   └── generate.py
-            ├── runtime/
-            │   └── sqlite_runtime.py
-            ├── schemas/
-            │   ├── api_schema.py
-            │   ├── architecture_schema.py
-            │   ├── auth_schema.py
-            │   ├── db_schema.py
-            │   ├── final_output_schema.py
-            │   ├── intent_schema.py
-            │   └── ui_schema.py
-            ├── services/
-            │   ├── gemini_service.py
-            │   ├── json_parser.py
-            │   └── supabase_service.py
-            └── utils/
-                ├── consistency.py
-                ├── helpers.py
-                └── retry.py
+        ├── app/
+        │   ├── main.py
+        │   ├── core/
+        │   │   ├── config.py
+        │   │   ├── database.py
+        │   │   └── logging.py
+        │   ├── evaluation/
+        │   │   ├── benchmark.py
+        │   │   ├── dataset.py
+        │   │   ├── metrics.py
+        │   │   ├── prompts.py
+        │   │   └── runner.py
+        │   ├── generators/
+        │   │   └── backend_generator.py
+        │   ├── monitoring/
+        │   │   └── metrics.py
+        │   ├── pipeline/
+        │   │   ├── clarification_engine.py
+        │   │   ├── compiler_agent.py
+        │   │   ├── json_repair.py
+        │   │   ├── orchestrator.py
+        │   │   ├── regeneration_engine.py
+        │   │   ├── repair_engine.py
+        │   │   ├── retry_handler.py
+        │   │   ├── runtime_executor.py
+        │   │   └── validator.py
+        │   ├── prompts/
+        │   │   ├── intent_prompt.py
+        │   │   ├── planner_prompt.py
+        │   │   ├── repair_prompt.py
+        │   │   └── schema_prompt.py
+        │   ├── routes/
+        │   │   └── generate.py
+        │   ├── runtime/
+        │   │   └── sqlite_runtime.py
+        │   ├── schemas/
+        │   │   ├── api_schema.py
+        │   │   ├── architecture_schema.py
+        │   │   ├── auth_schema.py
+        │   │   ├── db_schema.py
+        │   │   ├── final_output_schema.py
+        │   │   ├── intent_schema.py
+        │   │   └── ui_schema.py
+        │   ├── services/
+        │   │   ├── gemini_service.py
+        │   │   ├── json_parser.py
+        │   │   └── supabase_service.py
+        │   └── utils/
+        │       ├── consistency.py
+        │       ├── helpers.py
+        │       └── retry.py
+        └── generated/
+            └── backend/
+                ├── database.py
+                ├── main.py
+                ├── models/
+                │   ├── activities.py
+                │   ├── analytics.py
+                │   ├── analytics_data.py
+                │   ├── contacts.py
+                │   ├── subscriptions.py
+                │   └── users.py
+                └── routes/
+                    ├── admin.py
+                    ├── analytics.py
+                    ├── auth.py
+                    ├── contacts.py
+                    ├── dashboard.py
+                    └── subscriptions.py
 
 ================================================
 FILE: backend/README.md
@@ -136,6 +162,145 @@ FILE: backend/app/core/logging.py
 
 
 ================================================
+FILE: backend/app/evaluation/benchmark.py
+================================================
+import time
+
+from app.pipeline.orchestrator import PipelineOrchestrator
+
+from app.evaluation.prompts import (
+    REAL_WORLD_PROMPTS,
+    EDGE_CASE_PROMPTS
+)
+
+
+pipeline = PipelineOrchestrator()
+
+
+def run_benchmark():
+
+    prompts = (
+        REAL_WORLD_PROMPTS
+        + EDGE_CASE_PROMPTS
+    )
+
+    results = []
+
+    success_count = 0
+
+    total_latency = 0
+
+    for prompt in prompts:
+
+        print("\n====================")
+        print("PROMPT:")
+        print(prompt)
+
+        start = time.time()
+
+        try:
+
+            result = pipeline.run(prompt)
+
+            latency = (
+                time.time() - start
+            )
+
+            total_latency += latency
+
+            validation_errors = result.get(
+                "validation_errors",
+                []
+            )
+
+            repaired = result.get(
+                "repair_applied",
+                False
+            )
+
+            success = (
+                len(validation_errors) == 0
+            )
+
+            if success:
+
+                success_count += 1
+
+            benchmark_result = {
+
+                "prompt": prompt,
+
+                "success": success,
+
+                "latency": latency,
+
+                "repair_applied": repaired,
+
+                "validation_errors": validation_errors
+            }
+
+            results.append(
+                benchmark_result
+            )
+
+            print("SUCCESS")
+            print(f"Latency: {latency:.2f}s")
+            print(f"Repair Applied: {repaired}")
+            print(
+                f"Validation Errors: {validation_errors}"
+            )
+
+        except Exception as e:
+
+            latency = (
+                time.time() - start
+            )
+
+            results.append({
+
+                "prompt": prompt,
+
+                "success": False,
+
+                "latency": latency,
+
+                "error": str(e)
+            })
+
+            print("FAILED")
+            print(str(e))
+
+    average_latency = (
+        total_latency / len(prompts)
+    )
+
+    print("\n====================")
+    print("FINAL METRICS")
+    print("====================")
+
+    print(
+        f"Total Prompts: {len(prompts)}"
+    )
+
+    print(
+        f"Successful: {success_count}"
+    )
+
+    print(
+        f"Success Rate: {(success_count / len(prompts)) * 100:.2f}%"
+    )
+
+    print(
+        f"Average Latency: {average_latency:.2f}s"
+    )
+
+
+if __name__ == "__main__":
+
+    run_benchmark()
+
+
+================================================
 FILE: backend/app/evaluation/dataset.py
 ================================================
 [Empty file]
@@ -148,140 +313,683 @@ FILE: backend/app/evaluation/metrics.py
 
 
 ================================================
+FILE: backend/app/evaluation/prompts.py
+================================================
+REAL_WORLD_PROMPTS = [
+
+    "Build a CRM with login, contacts, dashboard, analytics, subscriptions, and role-based access.",
+
+    "Create an e-commerce platform with products, cart, checkout, payments, and admin analytics.",
+
+    "Build a hospital management system with doctors, patients, appointments, billing, and admin panel.",
+
+    "Create a learning management system with courses, students, quizzes, certificates, and subscriptions.",
+
+    "Build a project management tool with tasks, Kanban board, teams, notifications, and permissions.",
+
+    "Create a social media app with posts, comments, likes, messaging, and profiles.",
+
+    "Build a SaaS invoicing platform with invoices, payments, reports, and user roles.",
+
+    "Create a job portal with employers, candidates, applications, dashboards, and subscriptions.",
+
+    "Build a restaurant management system with orders, menu, kitchen dashboard, and analytics.",
+
+    "Create an event booking platform with tickets, payments, QR validation, and admin analytics."
+]
+
+
+EDGE_CASE_PROMPTS = [
+
+    "Build app",
+
+    "Make something like Facebook but also like Uber.",
+
+    "Create a system with no login but secure authentication.",
+
+    "Build a CRM with blockchain AI NFT payment gateway.",
+
+    "Create dashboard.",
+
+    "Build an app for everything.",
+
+    "Make admin and users but admins should not access admin data.",
+
+    "Create a hospital system without patient records.",
+
+    "Build scalable realtime offline-first AI social commerce platform.",
+
+    "Create app."
+]
+
+
+================================================
 FILE: backend/app/evaluation/runner.py
 ================================================
 [Empty file]
 
 
 ================================================
-FILE: backend/app/pipeline/architecture_planner.py
+FILE: backend/app/generators/backend_generator.py
 ================================================
-import json
+import os
 
-from app.services.gemini_service import gemini_service
 
-from app.schemas.architecture_schema import (
-    ArchitectureSchema
+class BackendGenerator:
+
+    def generate(self, result):
+
+        os.makedirs(
+            "generated/backend/routes",
+            exist_ok=True
+        )
+
+        os.makedirs(
+            "generated/backend/models",
+            exist_ok=True
+        )
+
+        self.generate_database_file()
+
+        self.generate_models(
+            result["database"]
+        )
+
+        self.generate_routes(
+            result["api"]
+        )
+
+        self.generate_main_file(
+            result["api"]
+        )
+
+    def generate_database_file(self):
+
+        content = """
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+DATABASE_URL = "sqlite:///./generated_app.db"
+
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False}
 )
 
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
 
-class ArchitecturePlanner:
-
-    def run(self, intent):
-
-        prompt = f"""
-You are a software architecture planner.
-
-Convert the intent into STRICT JSON.
-
-You MUST return ONLY valid JSON.
-
-Do NOT return markdown.
-Do NOT return explanations.
-Do NOT add extra keys.
-
-Required JSON structure:
-
-{{
-  "entities": [
-    {{
-      "name": "string",
-      "fields": ["string"]
-    }}
-  ],
-  "pages": ["string"],
-  "modules": ["string"],
-  "roles": ["string"]
-}}
-
-Rules:
-- entities = database/business entities
-- fields = important entity fields
-- pages = frontend pages
-- modules = backend modules/features
-- roles = user roles
-
-Intent:
-{intent.model_dump_json(indent=2)}
+Base = declarative_base()
 """
 
-        response = gemini_service.generate_json(
-            prompt
-        )
+        with open(
+            "generated/backend/database.py",
+            "w",
+            encoding="utf-8"
+        ) as file:
 
-        print("\nRAW ARCHITECTURE RESPONSE:\n")
-        print(response)
+            file.write(content)
 
-        parsed = json.loads(response)
+    def generate_models(
+        self,
+        database_schema
+    ):
 
-        validated = ArchitectureSchema(
-            **parsed
-        )
+        for table in database_schema.get(
+            "tables",
+            []
+        ):
 
-        return validated
+            class_name = table[
+                "table_name"
+            ].capitalize()
+
+            columns_code = []
+
+            for column in table.get(
+                "columns",
+                []
+            ):
+
+                column_name = column["name"]
+
+                if column_name == "id":
+
+                    columns_code.append(
+                        "    id = Column(Integer, primary_key=True, index=True)"
+                    )
+
+                    continue
+
+                sql_type = column["type"]
+
+                sqlalchemy_type = "String"
+
+                if sql_type == "INTEGER":
+                    sqlalchemy_type = "Integer"
+
+                elif sql_type == "BOOLEAN":
+                    sqlalchemy_type = "Boolean"
+
+                columns_code.append(
+                    f"    {column_name} = Column({sqlalchemy_type})"
+                )
+
+            model_code = f'''
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
+
+
+class {class_name}(Base):
+
+    __tablename__ = "{table["table_name"]}"
+
+{chr(10).join(columns_code)}
+'''
+
+            with open(
+                f'generated/backend/models/{table["table_name"]}.py',
+                "w",
+                encoding="utf-8"
+            ) as file:
+
+                file.write(model_code)
+
+    def generate_routes(
+        self,
+        api_schema
+    ):
+
+        grouped_routes = {}
+
+        for endpoint in api_schema.get(
+            "endpoints",
+            []
+        ):
+
+            path = endpoint["path"]
+
+            route_name = path.split("/")[1]
+
+            if route_name not in grouped_routes:
+
+                grouped_routes[
+                    route_name
+                ] = []
+
+            grouped_routes[
+                route_name
+            ].append(endpoint)
+
+        for route_group, endpoints in grouped_routes.items():
+
+            route_code = '''
+from fastapi import APIRouter
+
+router = APIRouter()
+'''
+
+            for endpoint in endpoints:
+
+                path = endpoint["path"]
+
+                method = endpoint[
+                    "method"
+                ].lower()
+
+                function_name = (
+                    method
+                    + "_"
+                    + path.replace("/", "_")
+                    .replace("{", "")
+                    .replace("}", "")
+                )
+
+                route_code += f'''
+
+@router.{method}("{path}")
+def {function_name}():
+
+    return {{
+        "message": "{path} works"
+    }}
+'''
+
+            with open(
+                f"generated/backend/routes/{route_group}.py",
+                "w",
+                encoding="utf-8"
+            ) as file:
+
+                file.write(route_code)
+
+    def generate_main_file(
+        self,
+        api_schema
+    ):
+
+        route_groups = set()
+
+        for endpoint in api_schema.get(
+            "endpoints",
+            []
+        ):
+
+            route_name = endpoint[
+                "path"
+            ].split("/")[1]
+
+            route_groups.add(
+                route_name
+            )
+
+        imports = []
+
+        includes = []
+
+        for group in route_groups:
+
+            imports.append(
+                f"from routes import {group}"
+            )
+
+            includes.append(
+                f"app.include_router({group}.router)"
+            )
+
+        main_code = f'''
+from fastapi import FastAPI
+
+{chr(10).join(imports)}
+
+app = FastAPI()
+
+{chr(10).join(includes)}
+
+
+@app.get("/")
+def root():
+
+    return {{
+        "message": "AI Generated Backend Running"
+    }}
+'''
+
+        with open(
+            "generated/backend/main.py",
+            "w",
+            encoding="utf-8"
+        ) as file:
+
+            file.write(main_code)
 
 
 ================================================
-FILE: backend/app/pipeline/intent_extractor.py
+FILE: backend/app/monitoring/metrics.py
+================================================
+import time
+
+
+class MetricsTracker:
+
+    def __init__(self):
+
+        self.total_requests = 0
+
+        self.successful_requests = 0
+
+        self.failed_requests = 0
+
+        self.total_latency = 0
+
+    def start_timer(self):
+
+        return time.time()
+
+    def end_timer(self, start_time):
+
+        return round(
+            time.time() - start_time,
+            2
+        )
+
+    def record_success(
+        self,
+        latency
+    ):
+
+        self.total_requests += 1
+
+        self.successful_requests += 1
+
+        self.total_latency += latency
+
+    def record_failure(
+        self,
+        latency
+    ):
+
+        self.total_requests += 1
+
+        self.failed_requests += 1
+
+        self.total_latency += latency
+
+    def get_metrics(self):
+
+        average_latency = 0
+
+        if self.total_requests > 0:
+
+            average_latency = (
+                self.total_latency
+                / self.total_requests
+            )
+
+        success_rate = 0
+
+        if self.total_requests > 0:
+
+            success_rate = (
+                self.successful_requests
+                / self.total_requests
+            ) * 100
+
+        return {
+
+            "total_requests":
+                self.total_requests,
+
+            "successful_requests":
+                self.successful_requests,
+
+            "failed_requests":
+                self.failed_requests,
+
+            "success_rate":
+                round(success_rate, 2),
+
+            "average_latency":
+                round(average_latency, 2)
+        }
+
+
+================================================
+FILE: backend/app/pipeline/clarification_engine.py
+================================================
+class ClarificationEngine:
+
+    def analyze(
+        self,
+        user_prompt: str
+    ):
+
+        prompt = user_prompt.lower()
+
+        questions = []
+
+        clarification_needed = False
+
+        # Very short prompts
+        if len(prompt.split()) < 4:
+
+            clarification_needed = True
+
+            questions.append(
+                "What type of application do you want to build?"
+            )
+
+        # Missing core business domain
+        keywords = [
+            "crm",
+            "ecommerce",
+            "dashboard",
+            "hospital",
+            "school",
+            "chat",
+            "social",
+            "booking",
+            "management",
+            "analytics"
+        ]
+
+        has_domain = any(
+            keyword in prompt
+            for keyword in keywords
+        )
+
+        if not has_domain:
+
+            clarification_needed = True
+
+            questions.append(
+                "What business domain should the application target?"
+            )
+
+        # Missing auth expectations
+        auth_keywords = [
+            "login",
+            "auth",
+            "authentication",
+            "roles",
+            "admin"
+        ]
+
+        has_auth = any(
+            keyword in prompt
+            for keyword in auth_keywords
+        )
+
+        if not has_auth:
+
+            questions.append(
+                "Should the application include authentication and role-based access?"
+            )
+
+        return {
+
+            "clarification_needed": clarification_needed,
+
+            "questions": questions
+        }
+
+
+================================================
+FILE: backend/app/pipeline/compiler_agent.py
 ================================================
 import json
 
 from app.services.gemini_service import gemini_service
-
-from app.schemas.intent_schema import IntentSchema
-
-from app.prompts.intent_prompt import INTENT_PROMPT
+from app.pipeline.json_repair import JSONRepair
 
 
-class IntentExtractor:
+class CompilerAgent:
+
+    def __init__(self):
+
+        self.json_repair = JSONRepair()
 
     def run(self, user_prompt: str):
 
-        prompt = INTENT_PROMPT.format(
-            user_prompt=user_prompt
+        prompt = f"""
+You are an AI software architect.
+
+Generate COMPLETE application blueprint JSON.
+
+User Request:
+{user_prompt}
+
+Return STRICT JSON ONLY.
+
+Required JSON Structure:
+
+{{
+  "intent": {{
+    "app_name": "string",
+    "app_type": "string",
+    "features": ["string"],
+    "user_roles": ["string"]
+  }},
+
+  "architecture": {{
+    "entities": [
+      {{
+        "name": "string",
+        "fields": ["string"]
+      }}
+    ],
+
+    "pages": ["string"],
+
+    "modules": ["string"],
+
+    "roles": ["string"]
+  }},
+
+  "database": {{
+    "tables": [
+      {{
+        "table_name": "string",
+        "columns": [
+          {{
+            "name": "id",
+            "type": "TEXT",
+            "required": true
+          }}
+        ]
+      }}
+    ]
+  }},
+
+  "api": {{
+    "endpoints": [
+      {{
+        "path": "string",
+        "method": "GET",
+        "request_fields": [],
+        "response_fields": []
+      }}
+    ]
+  }},
+
+  "ui": {{
+    "pages": [
+      {{
+        "name": "string",
+        "components": []
+      }}
+    ]
+  }},
+
+  "auth": {{
+    "roles": ["string"],
+    "permissions": []
+  }}
+}}
+
+Rules:
+
+1. Every database table MUST contain id field.
+2. Use TEXT datatype for SQLite.
+3. Create CRUD APIs.
+4. Include login/register APIs.
+5. Include admin permissions if admin exists.
+6. Return VALID JSON ONLY.
+7. No markdown.
+8. No explanation.
+"""
+
+        response = gemini_service.generate_json(prompt)
+
+        result = self.json_repair.repair(
+            response
         )
 
-        response = gemini_service.generate_json(
-            prompt
+        # Inject fake invalid field for testing
+        result["api"]["endpoints"][0]["request_fields"].append(
+            "fake_field_xyz"
         )
 
-        print("\nRAW GEMINI RESPONSE:\n")
-        print(response)
+        return result
 
-        parsed = json.loads(response)
 
-        validated = IntentSchema(**parsed)
+================================================
+FILE: backend/app/pipeline/json_repair.py
+================================================
+import json
+import re
 
-        return validated
+
+class JSONRepair:
+
+    def repair(
+        self,
+        raw_text: str
+    ):
+
+        cleaned = raw_text.strip()
+
+        # Remove markdown wrappers
+        cleaned = cleaned.replace(
+            "```json",
+            ""
+        )
+
+        cleaned = cleaned.replace(
+            "```",
+            ""
+        )
+
+        # Remove trailing commas
+        cleaned = re.sub(
+            r",\s*}",
+            "}",
+            cleaned
+        )
+
+        cleaned = re.sub(
+            r",\s*]",
+            "]",
+            cleaned
+        )
+
+        # Extract JSON object only
+        start = cleaned.find("{")
+        end = cleaned.rfind("}")
+
+        if start != -1 and end != -1:
+
+            cleaned = cleaned[
+                start:end + 1
+            ]
+
+        return json.loads(cleaned)
 
 
 ================================================
 FILE: backend/app/pipeline/orchestrator.py
 ================================================
-from app.pipeline.intent_extractor import IntentExtractor
-
-from app.pipeline.architecture_planner import ArchitecturePlanner
-
-from app.pipeline.schema_generator import SchemaGenerator
-
+from app.pipeline.compiler_agent import CompilerAgent
 from app.pipeline.validator import SchemaValidator
-
 from app.pipeline.repair_engine import RepairEngine
-
 from app.runtime.sqlite_runtime import SQLiteRuntime
-
 from app.services.supabase_service import supabase
+from app.generators.backend_generator import BackendGenerator
+from app.pipeline.clarification_engine import ClarificationEngine
+from app.pipeline.regeneration_engine import RegenerationEngine
+from app.pipeline.retry_handler import RetryHandler
+from app.monitoring.metrics import MetricsTracker
 
 
 class PipelineOrchestrator:
 
     def __init__(self):
 
-        self.intent_extractor = IntentExtractor()
-
-        self.architecture_planner = ArchitecturePlanner()
-
-        self.schema_generator = SchemaGenerator()
+        self.compiler_agent = CompilerAgent()
 
         self.validator = SchemaValidator()
 
@@ -289,46 +997,64 @@ class PipelineOrchestrator:
 
         self.runtime = SQLiteRuntime()
 
+        self.backend_generator = BackendGenerator()
+
+        self.clarification_engine = ClarificationEngine()
+
+        self.regeneration_engine = RegenerationEngine()
+
+        self.retry_handler = RetryHandler()
+
+        self.metrics = MetricsTracker()
+
     def run(self, user_prompt: str):
 
-        # =========================
-        # 1. INTENT EXTRACTION
-        # =========================
+        start_time = self.metrics.start_timer()
 
-        intent = self.intent_extractor.run(
+        clarification = self.clarification_engine.analyze(
             user_prompt
         )
 
-        # =========================
-        # 2. ARCHITECTURE PLANNING
-        # =========================
+        if clarification["clarification_needed"]:
 
-        architecture = self.architecture_planner.run(
-            intent
-        )
+            return {
 
-        # =========================
-        # 3. SCHEMA GENERATION
-        # =========================
+                "status": "clarification_needed",
 
-        schemas = self.schema_generator.generate_all_schemas(
-            architecture
-        )
+                "questions": clarification["questions"]
+            }
 
-        db_schema = schemas["database_schema"]
+        try:
 
-        api_schema = schemas["api_schema"]
+            result = self.retry_handler.execute(
+                lambda: self.compiler_agent.run(
+                    user_prompt
+                )
+            )
 
-        auth_schema = schemas["auth_schema"]
+        except Exception as e:
 
-        # Generate UI separately
-        ui_schema = self.schema_generator.generate_ui_schema(
-            architecture
-        )
+            latency = self.metrics.end_timer(
+                start_time
+            )
 
-        # =========================
-        # 4. VALIDATION
-        # =========================
+            self.metrics.record_failure(
+                latency
+            )
+
+            raise e
+
+        intent = result["intent"]
+
+        architecture = result["architecture"]
+
+        db_schema = result["database"]
+
+        api_schema = result["api"]
+
+        ui_schema = result["ui"]
+
+        auth_schema = result["auth"]
 
         validation_errors = self.validator.validate(
             database_schema=db_schema,
@@ -337,97 +1063,194 @@ class PipelineOrchestrator:
             auth_schema=auth_schema
         )
 
-        # =========================
-        # 5. REPAIR ENGINE
-        # =========================
-
         repaired = False
 
         if validation_errors:
 
             repaired = True
 
-            api_schema = self.repair_engine.repair_api_schema(
-                api_schema,
-                db_schema
-            )
+            api_related_errors = [
 
-            # Re-run validation after repair
-            validation_errors = self.validator.validate(
-                database_schema=db_schema,
-                api_schema=api_schema,
-                ui_schema=ui_schema,
-                auth_schema=auth_schema
-            )
+                error
 
-        # =========================
-        # 6. RUNTIME EXECUTION
-        # =========================
+                for error in validation_errors
 
-        runtime_status = "success"
+                if (
+                    "API" in error
+                    or "request field" in error
+                    or "response field" in error
+                )
+            ]
+
+            if api_related_errors:
+
+                try:
+
+                    api_schema = (
+                        self.regeneration_engine
+                        .regenerate_api_schema(
+                            user_prompt=user_prompt,
+                            database_schema=db_schema,
+                            validation_errors=api_related_errors
+                        )
+                    )
+
+                except Exception as e:
+
+                    print(
+                        "REGENERATION FAILED:",
+                        e
+                    )
+
+                    api_schema = (
+                        self.repair_engine
+                        .repair_api_schema(
+                            api_schema,
+                            db_schema
+                        )
+                    )
+
+            else:
+
+                api_schema = (
+                    self.repair_engine
+                    .repair_api_schema(
+                        api_schema,
+                        db_schema
+                    )
+                )
+
+        self.runtime.create_database(
+            db_schema
+        )
 
         try:
 
-            self.runtime.create_database(
-                db_schema
-            )
+            supabase.table(
+                "generated_apps"
+            ).insert({
+
+                "prompt": user_prompt,
+
+                "intent": intent,
+
+                "architecture": architecture,
+
+                "database_schema": db_schema,
+
+                "api_schema": api_schema,
+
+                "ui_schema": ui_schema,
+
+                "auth_schema": auth_schema,
+
+                "validation_errors": validation_errors,
+
+            }).execute()
 
         except Exception as e:
 
-            runtime_status = f"failed: {str(e)}"
+            print(
+                "SUPABASE ERROR:",
+                e
+            )
 
-        # =========================
-        # 7. SAVE TO SUPABASE
-        # =========================
+        result["api"] = api_schema
 
-        supabase.table(
-            "generated_apps"
-        ).insert({
+        self.backend_generator.generate(
+            result
+        )
 
-            "prompt": user_prompt,
+        latency = self.metrics.end_timer(
+            start_time
+        )
 
-            "intent": intent.model_dump(),
-
-            "architecture": architecture.model_dump(),
-
-            "database_schema": db_schema.model_dump(),
-
-            "api_schema": api_schema.model_dump(),
-
-            "ui_schema": ui_schema.model_dump(),
-
-            "auth_schema": auth_schema.model_dump(),
-
-            "validation_errors": validation_errors,
-
-            "repair_applied": repaired
-
-        }).execute()
-
-        # =========================
-        # 8. FINAL RESPONSE
-        # =========================
+        self.metrics.record_success(
+            latency
+        )
 
         return {
 
-            "intent": intent.model_dump(),
+            "intent": intent,
 
-            "architecture": architecture.model_dump(),
+            "architecture": architecture,
 
-            "database": db_schema.model_dump(),
+            "database": db_schema,
 
-            "api": api_schema.model_dump(),
+            "api": api_schema,
 
-            "ui": ui_schema.model_dump(),
+            "ui": ui_schema,
 
-            "auth": auth_schema.model_dump(),
+            "auth": auth_schema,
 
             "validation_errors": validation_errors,
 
             "repair_applied": repaired,
 
-            "runtime_status": runtime_status
+            "metrics": self.metrics.get_metrics()
         }
+
+
+================================================
+FILE: backend/app/pipeline/regeneration_engine.py
+================================================
+from app.services.gemini_service import gemini_service
+
+import json
+
+
+class RegenerationEngine:
+
+    def regenerate_api_schema(
+        self,
+        user_prompt,
+        database_schema,
+        validation_errors
+    ):
+
+        prompt = f"""
+You are an API schema repair engine.
+
+The original user request was:
+
+{user_prompt}
+
+Database Schema:
+
+{json.dumps(database_schema, indent=2)}
+
+Validation Errors:
+
+{json.dumps(validation_errors, indent=2)}
+
+Generate ONLY corrected API schema.
+
+Return STRICT JSON ONLY.
+
+Required Format:
+
+{{
+  "endpoints": [
+    {{
+      "path": "string",
+      "method": "GET",
+      "request_fields": [],
+      "response_fields": []
+    }}
+  ]
+}}
+"""
+
+        response = gemini_service.generate(prompt)
+
+        cleaned = (
+            response
+            .replace("```json", "")
+            .replace("```", "")
+            .strip()
+        )
+
+        return json.loads(cleaned)
 
 
 ================================================
@@ -441,146 +1264,107 @@ class RepairEngine:
         db_schema
     ):
 
-        valid_fields = set()
+        db_fields = set()
 
-        for table in db_schema.tables:
-            for column in table.columns:
-                valid_fields.add(column.name)
+        for table in db_schema.get("tables", []):
 
-        for endpoint in api_schema.endpoints:
+            for column in table.get("columns", []):
 
-            endpoint.request_fields = [
-                field
-                for field in endpoint.request_fields
-                if field in valid_fields
-            ]
+                db_fields.add(
+                    column["name"]
+                )
+
+        for endpoint in api_schema.get("endpoints", []):
+
+            fixed_request_fields = []
+
+            for field in endpoint.get(
+                "request_fields",
+                []
+            ):
+
+                if (
+                    field in db_fields
+                    or field == "password"
+                ):
+
+                    fixed_request_fields.append(
+                        field
+                    )
+
+            endpoint["request_fields"] = (
+                fixed_request_fields
+            )
+
+            fixed_response_fields = []
+
+            for field in endpoint.get(
+                "response_fields",
+                []
+            ):
+
+                if (
+                    field in db_fields
+                    or field in [
+                        "token",
+                        "message",
+                        "data"
+                    ]
+                ):
+
+                    fixed_response_fields.append(
+                        field
+                    )
+
+            endpoint["response_fields"] = (
+                fixed_response_fields
+            )
 
         return api_schema
+
+
+================================================
+FILE: backend/app/pipeline/retry_handler.py
+================================================
+import time
+
+
+class RetryHandler:
+
+    def execute(
+        self,
+        function,
+        retries=3,
+        delay=2
+    ):
+
+        last_error = None
+
+        for attempt in range(retries):
+
+            try:
+
+                return function()
+
+            except Exception as e:
+
+                last_error = e
+
+                print(
+                    f"Retry Attempt {attempt + 1} Failed:"
+                )
+
+                print(str(e))
+
+                time.sleep(delay)
+
+        raise last_error
 
 
 ================================================
 FILE: backend/app/pipeline/runtime_executor.py
 ================================================
 [Empty file]
-
-
-================================================
-FILE: backend/app/pipeline/schema_generator.py
-================================================
-import json
-
-from app.services.gemini_service import gemini_service
-
-from app.schemas.db_schema import DatabaseSchema
-from app.schemas.api_schema import APISchema
-from app.schemas.ui_schema import UISchema
-from app.schemas.auth_schema import AuthSchema
-
-
-class SchemaGenerator:
-
-    def generate_all_schemas(self, architecture):
-
-        prompt = f"""
-You are a software schema generator.
-
-Generate ALL schemas together.
-
-Return ONLY valid JSON.
-
-Do NOT return markdown.
-Do NOT return explanations.
-Do NOT add extra keys.
-
-Required JSON structure:
-
-{{
-  "database_schema": {{
-    "tables": [
-      {{
-        "table_name": "string",
-        "columns": [
-          {{
-            "name": "string",
-            "type": "TEXT",
-            "required": true
-          }}
-        ]
-      }}
-    ]
-  }},
-
-  "api_schema": {{
-    "endpoints": [
-      {{
-        "path": "string",
-        "method": "GET",
-        "request_fields": ["string"],
-        "response_fields": ["string"]
-      }}
-    ]
-  }},
-
-  "ui_schema": {{
-    "pages": [
-      {{
-        "name": "string",
-        "components": [
-          {{
-            "type": "string",
-            "props": {{}}
-          }}
-        ]
-      }}
-    ]
-  }},
-
-  "auth_schema": {{
-    "roles": ["string"],
-    "permissions": [
-      {{
-        "role": "string",
-        "allowed_routes": ["string"]
-      }}
-    ]
-  }}
-}}
-
-Architecture:
-{architecture.model_dump_json(indent=2)}
-"""
-
-        response = gemini_service.generate_json(
-            prompt
-        )
-
-        print("\nRAW COMBINED SCHEMA RESPONSE:\n")
-        print(response)
-
-        parsed = json.loads(response)
-
-        database_schema = DatabaseSchema(
-            **parsed["database_schema"]
-        )
-
-        api_schema = APISchema(
-            **parsed["api_schema"]
-        )
-
-        ui_schema = UISchema(
-            **parsed["ui_schema"]
-        )
-
-        auth_schema = AuthSchema(
-            **parsed["auth_schema"]
-        )
-
-        return {
-            "database_schema": database_schema,
-            "api_schema": api_schema,
-            "ui_schema": ui_schema,
-            "auth_schema": auth_schema
-        }
 
 
 ================================================
@@ -634,17 +1418,17 @@ class SchemaValidator:
 
         errors = []
 
-        for table in database_schema.tables:
+        for table in database_schema.get("tables", []):
 
             column_names = [
-                column.name
-                for column in table.columns
+                column["name"]
+                for column in table.get("columns", [])
             ]
 
             if "id" not in column_names:
 
                 errors.append(
-                    f"{table.table_name} missing id field"
+                    f'{table["table_name"]} missing id field'
                 )
 
         return errors
@@ -659,17 +1443,20 @@ class SchemaValidator:
 
         db_fields = set()
 
-        for table in database_schema.tables:
+        for table in database_schema.get("tables", []):
 
-            for column in table.columns:
+            for column in table.get("columns", []):
 
                 db_fields.add(
-                    column.name
+                    column["name"]
                 )
 
-        for endpoint in api_schema.endpoints:
+        for endpoint in api_schema.get("endpoints", []):
 
-            for field in endpoint.request_fields:
+            for field in endpoint.get(
+                "request_fields",
+                []
+            ):
 
                 if (
                     field not in db_fields
@@ -680,11 +1467,18 @@ class SchemaValidator:
                         f"API request field '{field}' not found in DB schema"
                     )
 
-            for field in endpoint.response_fields:
+            for field in endpoint.get(
+                "response_fields",
+                []
+            ):
 
                 if (
                     field not in db_fields
-                    and field not in ["token", "message", "data"]
+                    and field not in [
+                        "token",
+                        "message",
+                        "data"
+                    ]
                 ):
 
                     errors.append(
@@ -703,15 +1497,21 @@ class SchemaValidator:
 
         api_routes = set()
 
-        for endpoint in api_schema.endpoints:
+        for endpoint in api_schema.get("endpoints", []):
 
             api_routes.add(
-                endpoint.path
+                endpoint["path"]
             )
 
-        for permission in auth_schema.permissions:
+        for permission in auth_schema.get(
+            "permissions",
+            []
+        ):
 
-            for route in permission.allowed_routes:
+            for route in permission.get(
+                "allowed_routes",
+                []
+            ):
 
                 if route not in api_routes:
 
@@ -730,8 +1530,8 @@ class SchemaValidator:
         errors = []
 
         api_routes = [
-            endpoint.path
-            for endpoint in api_schema.endpoints
+            endpoint["path"]
+            for endpoint in api_schema.get("endpoints", [])
         ]
 
         has_contacts_api = any(
@@ -739,10 +1539,12 @@ class SchemaValidator:
             for route in api_routes
         )
 
-        for page in ui_schema.pages:
+        for page in ui_schema.get("pages", []):
+
+            page_name = page.get("name", "")
 
             if (
-                "Contact" in page.name
+                "Contact" in page_name
                 and not has_contacts_api
             ):
 
@@ -855,17 +1657,17 @@ class SQLiteRuntime:
 
         cursor = connection.cursor()
 
-        for table in db_schema.tables:
+        for table in db_schema["tables"]:
 
             columns = []
 
-            for column in table.columns:
+            for column in table["columns"]:
 
                 # Prevent duplicate id column
-                if column.name.lower() == "id":
+                if column["name"].lower() == "id":
                     continue
 
-                sql_type = column.type.upper()
+                sql_type = column["type"].upper()
 
                 if sql_type not in [
                     "TEXT",
@@ -875,12 +1677,12 @@ class SQLiteRuntime:
                     sql_type = "TEXT"
 
                 columns.append(
-                    f"{column.name} {sql_type}"
+                    f'{column["name"]} {sql_type}'
                 )
 
             query = f"""
             CREATE TABLE IF NOT EXISTS
-            {table.table_name}
+            {table["table_name"]}
             (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 {",".join(columns)}
@@ -1144,4 +1946,345 @@ FILE: backend/app/utils/helpers.py
 FILE: backend/app/utils/retry.py
 ================================================
 [Empty file]
+
+
+================================================
+FILE: backend/generated/backend/database.py
+================================================
+
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+DATABASE_URL = "sqlite:///./generated_app.db"
+
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False}
+)
+
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
+
+Base = declarative_base()
+
+
+
+================================================
+FILE: backend/generated/backend/main.py
+================================================
+
+from fastapi import FastAPI
+
+from routes import admin
+from routes import analytics
+from routes import contacts
+from routes import dashboard
+from routes import auth
+
+app = FastAPI()
+
+app.include_router(admin.router)
+app.include_router(analytics.router)
+app.include_router(contacts.router)
+app.include_router(dashboard.router)
+app.include_router(auth.router)
+
+
+@app.get("/")
+def root():
+
+    return {
+        "message": "AI Generated Backend Running"
+    }
+
+
+
+================================================
+FILE: backend/generated/backend/models/activities.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
+
+
+class Activities(Base):
+
+    __tablename__ = "activities"
+
+    id = Column(Integer, primary_key=True, index=True)
+    contact_id = Column(String)
+    user_id = Column(String)
+    type = Column(String)
+    description = Column(String)
+    timestamp = Column(String)
+
+
+
+================================================
+FILE: backend/generated/backend/models/analytics.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
+
+
+class Analytics(Base):
+
+    __tablename__ = "analytics"
+
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(String)
+    metric_name = Column(String)
+    metric_value = Column(String)
+
+
+
+================================================
+FILE: backend/generated/backend/models/analytics_data.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
+
+
+class Analytics_data(Base):
+
+    __tablename__ = "analytics_data"
+
+    id = Column(Integer, primary_key=True, index=True)
+    metric_name = Column(String)
+    metric_value = Column(String)
+    date = Column(String)
+
+
+
+================================================
+FILE: backend/generated/backend/models/contacts.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
+
+
+class Contacts(Base):
+
+    __tablename__ = "contacts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    first_name = Column(String)
+    last_name = Column(String)
+    email = Column(String)
+    phone = Column(String)
+    company = Column(String)
+    created_by_user_id = Column(String)
+
+
+
+================================================
+FILE: backend/generated/backend/models/subscriptions.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
+
+
+class Subscriptions(Base):
+
+    __tablename__ = "subscriptions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String)
+    plan_type = Column(String)
+    start_date = Column(String)
+    end_date = Column(String)
+    status = Column(String)
+
+
+
+================================================
+FILE: backend/generated/backend/models/users.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
+
+
+class Users(Base):
+
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String)
+    email = Column(String)
+    password_hash = Column(String)
+    role = Column(String)
+
+
+
+================================================
+FILE: backend/generated/backend/routes/admin.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.get("/admin/users")
+def get__admin_users():
+
+    return {
+        "message": "/admin/users works"
+    }
+
+
+@router.delete("/admin/users/{id}")
+def delete__admin_users_id():
+
+    return {
+        "message": "/admin/users/{id} works"
+    }
+
+
+
+================================================
+FILE: backend/generated/backend/routes/analytics.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.get("/analytics")
+def get__analytics():
+
+    return {
+        "message": "/analytics works"
+    }
+
+
+
+================================================
+FILE: backend/generated/backend/routes/auth.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.post("/auth/register")
+def post__auth_register():
+
+    return {
+        "message": "/auth/register works"
+    }
+
+
+@router.post("/auth/login")
+def post__auth_login():
+
+    return {
+        "message": "/auth/login works"
+    }
+
+
+
+================================================
+FILE: backend/generated/backend/routes/contacts.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.get("/contacts")
+def get__contacts():
+
+    return {
+        "message": "/contacts works"
+    }
+
+
+@router.post("/contacts")
+def post__contacts():
+
+    return {
+        "message": "/contacts works"
+    }
+
+
+@router.get("/contacts/{id}")
+def get__contacts_id():
+
+    return {
+        "message": "/contacts/{id} works"
+    }
+
+
+@router.put("/contacts/{id}")
+def put__contacts_id():
+
+    return {
+        "message": "/contacts/{id} works"
+    }
+
+
+@router.delete("/contacts/{id}")
+def delete__contacts_id():
+
+    return {
+        "message": "/contacts/{id} works"
+    }
+
+
+
+================================================
+FILE: backend/generated/backend/routes/dashboard.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.get("/dashboard")
+def get__dashboard():
+
+    return {
+        "message": "/dashboard works"
+    }
+
+
+
+================================================
+FILE: backend/generated/backend/routes/subscriptions.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.get("/subscriptions")
+def get__subscriptions():
+
+    return {
+        "message": "/subscriptions works"
+    }
+
+
+@router.post("/subscriptions")
+def post__subscriptions():
+
+    return {
+        "message": "/subscriptions works"
+    }
+
 

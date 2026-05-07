@@ -1,9 +1,14 @@
 import json
 
 from app.services.gemini_service import gemini_service
+from app.pipeline.json_repair import JSONRepair
 
 
 class CompilerAgent:
+
+    def __init__(self):
+
+        self.json_repair = JSONRepair()
 
     def run(self, user_prompt: str):
 
@@ -97,14 +102,9 @@ Rules:
 
         response = gemini_service.generate_json(prompt)
 
-        cleaned = (
+        result = self.json_repair.repair(
             response
-            .replace("```json", "")
-            .replace("```", "")
-            .strip()
         )
-
-        result = json.loads(cleaned)
 
         # Inject fake invalid field for testing
         result["api"]["endpoints"][0]["request_fields"].append(
