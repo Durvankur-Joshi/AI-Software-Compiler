@@ -1,9 +1,13 @@
 
-from pydantic import BaseModel
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
 
 
-class AnalyticsModel(BaseModel):
+class Analytics(Base):
 
-    date: str
-    metric_name: str
-    metric_value: str
+    __tablename__ = "analytics"
+
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(String)
+    metric_name = Column(String)
+    metric_value = Column(String)

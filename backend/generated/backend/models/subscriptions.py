@@ -1,11 +1,15 @@
 
-from pydantic import BaseModel
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
 
 
-class SubscriptionsModel(BaseModel):
+class Subscriptions(Base):
 
-    contact_id: str
-    plan_type: str
-    start_date: str
-    end_date: str
-    status: str
+    __tablename__ = "subscriptions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    contact_id = Column(String)
+    plan_type = Column(String)
+    start_date = Column(String)
+    end_date = Column(String)
+    status = Column(String)

@@ -1,10 +1,14 @@
 
-from pydantic import BaseModel
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
 
 
-class UsersModel(BaseModel):
+class Users(Base):
 
-    username: str
-    email: str
-    password_hash: str
-    role: str
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String)
+    email = Column(String)
+    password_hash = Column(String)
+    role = Column(String)

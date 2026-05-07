@@ -1,11 +1,20 @@
+
 from fastapi import APIRouter
 
 router = APIRouter()
 
+
 @router.post("/auth/register")
-def post_auth():
-    return {"message": "Generated endpoint"}
+def post__auth_register():
+
+    return {
+        "message": "/auth/register works"
+    }
+
 
 @router.post("/auth/login")
-def post_auth():
-    return {"message": "Generated endpoint"}
+def post__auth_login():
+
+    return {
+        "message": "/auth/login works"
+    }

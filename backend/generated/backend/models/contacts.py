@@ -1,12 +1,16 @@
 
-from pydantic import BaseModel
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
 
 
-class ContactsModel(BaseModel):
+class Contacts(Base):
 
-    first_name: str
-    last_name: str
-    email: str
-    phone: str
-    company: str
-    user_id: str
+    __tablename__ = "contacts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    first_name = Column(String)
+    last_name = Column(String)
+    email = Column(String)
+    phone = Column(String)
+    company = Column(String)
+    user_id = Column(String)

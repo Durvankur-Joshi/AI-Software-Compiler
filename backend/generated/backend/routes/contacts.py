@@ -1,23 +1,44 @@
+
 from fastapi import APIRouter
 
 router = APIRouter()
 
+
 @router.get("/contacts")
-def get_contacts():
-    return {"message": "Generated endpoint"}
+def get__contacts():
+
+    return {
+        "message": "/contacts works"
+    }
+
 
 @router.post("/contacts")
-def post_contacts():
-    return {"message": "Generated endpoint"}
+def post__contacts():
+
+    return {
+        "message": "/contacts works"
+    }
+
 
 @router.get("/contacts/{id}")
-def get_contacts():
-    return {"message": "Generated endpoint"}
+def get__contacts_id():
+
+    return {
+        "message": "/contacts/{id} works"
+    }
+
 
 @router.put("/contacts/{id}")
-def put_contacts():
-    return {"message": "Generated endpoint"}
+def put__contacts_id():
+
+    return {
+        "message": "/contacts/{id} works"
+    }
+
 
 @router.delete("/contacts/{id}")
-def delete_contacts():
-    return {"message": "Generated endpoint"}
+def delete__contacts_id():
+
+    return {
+        "message": "/contacts/{id} works"
+    }
