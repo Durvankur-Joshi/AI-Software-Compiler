@@ -1,46 +1,88 @@
 import React, { useState } from 'react';
+import { Eye, Code2, Copy, Check, Database, Cpu, Shield, Layout, GitBranch, ChevronRight } from 'lucide-react';
 
 const ResultViewer = ({ result }) => {
   const [activeTab, setActiveTab] = useState('intent');
+  const [copied, setCopied] = useState(false);
 
   const tabs = [
-    { id: 'intent', label: 'Intent', icon: '🎯' },
-    { id: 'architecture', label: 'Architecture', icon: '🏗️' },
-    { id: 'database', label: 'Database', icon: '🗄️' },
-    { id: 'api', label: 'API', icon: '🔌' },
-    { id: 'ui', label: 'UI', icon: '🎨' },
-    { id: 'auth', label: 'Auth', icon: '🔐' },
+    { id: 'intent', label: 'Intent', icon: Cpu, color: 'primary' },
+    { id: 'architecture', label: 'Architecture', icon: GitBranch, color: 'accent-purple' },
+    { id: 'database', label: 'Database', icon: Database, color: 'accent-cyan' },
+    { id: 'api', label: 'API', icon: Code2, color: 'accent-pink' },
+    { id: 'ui', label: 'UI', icon: Layout, color: 'primary' },
+    { id: 'auth', label: 'Auth', icon: Shield, color: 'accent-purple' },
   ];
 
   const getTabContent = () => {
     const data = result[activeTab];
     if (!data) {
-      return <p className="text-gray-500">No data available for {activeTab}</p>;
+      return (
+        <div className="text-center py-8 text-dark-text-secondary">
+          <Eye className="w-12 h-12 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">No data available for {activeTab}</p>
+        </div>
+      );
     }
     return <JSONViewer data={data} />;
   };
 
+  const handleCopyAll = () => {
+    navigator.clipboard.writeText(JSON.stringify(result, null, 2));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <div className="border-b border-gray-200">
-        <div className="flex overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-3 text-sm font-medium transition whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-              }`}
-            >
-              <span className="mr-2">{tab.icon}</span>
-              {tab.label}
-            </button>
-          ))}
+    <div className="glass-effect rounded-xl overflow-hidden border border-dark-border animate-scale-up">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-dark-border bg-dark-surface/50">
+        <div className="flex items-center gap-2">
+          <Code2 className="w-5 h-5 text-primary-500" />
+          <span className="font-mono text-sm font-medium">Generated Output</span>
+          <span className="text-xs text-dark-text-secondary ml-2">
+            {new Date().toLocaleTimeString()}
+          </span>
+        </div>
+        <button
+          onClick={handleCopyAll}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-dark-secondary hover:bg-dark-border transition-all duration-300 text-sm"
+        >
+          {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+          <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy All'}</span>
+        </button>
+      </div>
+
+      {/* Tabs */}
+      <div className="border-b border-dark-border overflow-x-auto">
+        <div className="flex">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`group relative px-4 py-3 text-sm font-medium transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${
+                  isActive
+                    ? 'text-primary-400 bg-dark-surface'
+                    : 'text-dark-text-secondary hover:text-dark-text hover:bg-dark-surface/50'
+                }`}
+              >
+                <Icon className={`w-4 h-4 transition-colors ${
+                  isActive ? `text-${tab.color}-500` : 'opacity-50'
+                }`} />
+                {tab.label}
+                {isActive && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary-500 to-accent-purple"></div>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
+      {/* Content */}
       <div className="p-4">
         {getTabContent()}
       </div>
@@ -48,28 +90,96 @@ const ResultViewer = ({ result }) => {
   );
 };
 
-const JSONViewer = ({ data }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+const JSONViewer = ({ data, level = 0 }) => {
+  const [collapsed, setCollapsed] = useState({});
+  
+  const toggleCollapse = (key) => {
+    setCollapsed(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  return (
-    <div className="relative">
-      <button
-        onClick={handleCopy}
-        className="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded transition z-10"
-      >
-        {copied ? 'Copied!' : 'Copy'}
-      </button>
-      <pre className="json-viewer text-xs overflow-auto max-h-[500px]">
-        {JSON.stringify(data, null, 2)}
-      </pre>
-    </div>
-  );
+  const formatValue = (value) => {
+    if (typeof value === 'string') {
+      return <span className="text-accent-cyan">"{value}"</span>;
+    }
+    if (typeof value === 'number') {
+      return <span className="text-accent-purple">{value}</span>;
+    }
+    if (typeof value === 'boolean') {
+      return <span className="text-primary-500">{value.toString()}</span>;
+    }
+    if (value === null) {
+      return <span className="text-dark-text-secondary">null</span>;
+    }
+    return value;
+  };
+
+  if (Array.isArray(data)) {
+    if (data.length === 0) {
+      return <span className="text-dark-text-secondary">[]</span>;
+    }
+
+    return (
+      <div className="pl-4 border-l border-dark-border">
+        {data.map((item, idx) => (
+          <div key={idx} className="mb-2">
+            <span className="text-dark-text-secondary text-xs mr-2">{idx}:</span>
+            <JSONViewer data={item} level={level + 1} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (typeof data === 'object' && data !== null) {
+    const entries = Object.entries(data);
+    if (entries.length === 0) {
+      return <span className="text-dark-text-secondary">{'{}'}</span>;
+    }
+
+    return (
+      <div className="space-y-1">
+        {entries.map(([key, value]) => {
+          const isComplex = typeof value === 'object' && value !== null;
+          const isCollapsed = collapsed[key];
+          
+          return (
+            <div key={key} className="ml-2">
+              <div className="flex items-start gap-2 group">
+                {isComplex && (
+                  <button
+                    onClick={() => toggleCollapse(key)}
+                    className="mt-0.5 p-0.5 hover:bg-dark-secondary rounded transition"
+                  >
+                    <ChevronRight className={`w-3 h-3 transition-transform ${isCollapsed ? '' : 'rotate-90'}`} />
+                  </button>
+                )}
+                <span className="text-primary-400 font-mono text-sm">{key}</span>
+                <span className="text-dark-text-secondary">:</span>
+                {!isComplex && (
+                  <div className="flex-1">
+                    {formatValue(value)}
+                    {!isComplex && <span className="text-dark-text-secondary text-xs ml-2">,</span>}
+                  </div>
+                )}
+              </div>
+              {isComplex && !isCollapsed && (
+                <div className="ml-4 mt-1">
+                  <JSONViewer data={value} level={level + 1} />
+                </div>
+              )}
+              {isComplex && isCollapsed && (
+                <div className="ml-6 text-xs text-dark-text-secondary">
+                  {Array.isArray(value) ? `[...]` : `{...}`}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return <span>{formatValue(data)}</span>;
 };
 
 export default ResultViewer;

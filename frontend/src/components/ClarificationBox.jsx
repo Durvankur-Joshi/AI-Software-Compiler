@@ -1,32 +1,56 @@
 import React from 'react';
+import { HelpCircle, Lightbulb, MessageCircle, ArrowRight } from 'lucide-react';
 
 const ClarificationBox = ({ questions }) => {
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-      <div className="flex items-start">
-        <div className="flex-shrink-0">
-          <svg className="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-        <div className="ml-3 flex-1">
-          <h3 className="text-lg font-semibold text-blue-800 mb-2">
-            Need More Information
-          </h3>
-          <p className="text-blue-700 mb-3">
-            Please provide additional details to help generate a better application:
-          </p>
-          <ul className="list-disc list-inside space-y-1">
-            {questions.map((question, idx) => (
-              <li key={idx} className="text-blue-700 text-sm">
-                {question}
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4 p-3 bg-blue-100 rounded">
-            <p className="text-sm text-blue-800">
-              💡 Tip: Update your prompt with the missing information and try again
+    <div className="gradient-border">
+      <div className="gradient-border-inner p-6">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-full bg-primary-500/20 flex items-center justify-center">
+                <HelpCircle className="w-6 h-6 text-primary-500" />
+              </div>
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent-purple rounded-full animate-pulse"></div>
+            </div>
+          </div>
+          
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-dark-text mb-2">
+              Additional Information Needed
+            </h3>
+            <p className="text-sm text-dark-text-secondary mb-4">
+              To generate a more accurate and complete backend, please provide the following details:
             </p>
+            
+            <div className="space-y-3 mb-6">
+              {questions.map((question, idx) => (
+                <div 
+                  key={idx} 
+                  className="flex items-start gap-3 p-3 rounded-lg bg-dark-secondary/50 border border-dark-border animate-slide-down"
+                  style={{ animationDelay: `${idx * 0.1}s` }}
+                >
+                  <div className="flex-shrink-0 mt-0.5">
+                    <div className="w-5 h-5 rounded-full bg-primary-500/20 flex items-center justify-center">
+                      <span className="text-xs text-primary-400 font-mono">{idx + 1}</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-dark-text flex-1">{question}</p>
+                  <ArrowRight className="w-4 h-4 text-dark-text-secondary opacity-50" />
+                </div>
+              ))}
+            </div>
+            
+            <div className="p-4 rounded-lg bg-primary-500/5 border border-primary-500/20">
+              <div className="flex items-start gap-2">
+                <Lightbulb className="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-dark-text-secondary">
+                  <p className="font-medium text-primary-400 mb-1">Pro Tip</p>
+                  <p>Update your prompt with the missing details above and regenerate for better results.</p>
+                  <p className="mt-2 text-primary-400/60">Example: "Build a CRM with authentication (JWT), contact management, analytics dashboard, and subscription billing with Stripe"</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
