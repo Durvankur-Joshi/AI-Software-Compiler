@@ -34,9 +34,9 @@ const ResultViewer = ({ result }) => {
   };
 
   return (
-    <div className="glass-effect rounded-xl overflow-hidden border border-dark-border animate-scale-up">
+    <div className="glass-effect rounded-xl overflow-hidden border border-dark-border animate-scale-up max-h-[85vh] flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-dark-border bg-dark-surface/50">
+      <div className="flex items-center  justify-between p-4 border-b border-dark-border bg-dark-surface/50">
         <div className="flex items-center gap-2">
           <Code2 className="w-5 h-5 text-primary-500" />
           <span className="font-mono text-sm font-medium">Generated Output</span>
@@ -54,7 +54,7 @@ const ResultViewer = ({ result }) => {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-dark-border overflow-x-auto">
+      <div className="border-b border-dark-border pb-3 ">
         <div className="flex">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -63,15 +63,13 @@ const ResultViewer = ({ result }) => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`group relative px-4 py-3 text-sm font-medium transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${
-                  isActive
-                    ? 'text-primary-400 bg-dark-surface'
-                    : 'text-dark-text-secondary hover:text-dark-text hover:bg-dark-surface/50'
-                }`}
+                className={`group relative px-4 py-3 text-sm font-medium transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${isActive
+                  ? 'text-primary-400 bg-dark-surface'
+                  : 'text-dark-text-secondary hover:text-dark-text hover:bg-dark-surface/50'
+                  }`}
               >
-                <Icon className={`w-4 h-4 transition-colors ${
-                  isActive ? `text-${tab.color}-500` : 'opacity-50'
-                }`} />
+                <Icon className={`w-4 h-4 transition-colors ${isActive ? `text-${tab.color}-500` : 'opacity-50'
+                  }`} />
                 {tab.label}
                 {isActive && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary-500 to-accent-purple"></div>
@@ -83,93 +81,158 @@ const ResultViewer = ({ result }) => {
       </div>
 
       {/* Content */}
-      <div className="p-4">
+      <div className="p-4 overflow-y-auto custom-scrollbar flex-1">
         {getTabContent()}
       </div>
     </div>
   );
 };
 
-const JSONViewer = ({ data, level = 0 }) => {
+const JSONViewer = ({ data, level = 0, path = "root" }) => {
   const [collapsed, setCollapsed] = useState({});
-  
+
   const toggleCollapse = (key) => {
-    setCollapsed(prev => ({ ...prev, [key]: !prev[key] }));
+    setCollapsed((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
   };
 
   const formatValue = (value) => {
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       return <span className="text-accent-cyan">"{value}"</span>;
     }
-    if (typeof value === 'number') {
+
+    if (typeof value === "number") {
       return <span className="text-accent-purple">{value}</span>;
     }
-    if (typeof value === 'boolean') {
-      return <span className="text-primary-500">{value.toString()}</span>;
+
+    if (typeof value === "boolean") {
+      return (
+        <span className="text-primary-500">
+          {value.toString()}
+        </span>
+      );
     }
+
     if (value === null) {
-      return <span className="text-dark-text-secondary">null</span>;
+      return (
+        <span className="text-dark-text-secondary">
+          null
+        </span>
+      );
     }
+
     return value;
   };
 
+  // ARRAY
   if (Array.isArray(data)) {
     if (data.length === 0) {
-      return <span className="text-dark-text-secondary">[]</span>;
+      return (
+        <span className="text-dark-text-secondary">
+          []
+        </span>
+      );
     }
 
     return (
-      <div className="pl-4 border-l border-dark-border">
+      <div className="pl-4 border-l border-dark-border space-y-2">
         {data.map((item, idx) => (
-          <div key={idx} className="mb-2">
-            <span className="text-dark-text-secondary text-xs mr-2">{idx}:</span>
-            <JSONViewer data={item} level={level + 1} />
+          <div key={`${path}-${idx}`}>
+            <span className="text-dark-text-secondary text-xs mr-2">
+              [{idx}]
+            </span>
+
+            <JSONViewer
+              data={item}
+              level={level + 1}
+              path={`${path}-${idx}`}
+            />
           </div>
         ))}
       </div>
     );
   }
 
-  if (typeof data === 'object' && data !== null) {
+  // OBJECT
+  if (typeof data === "object" && data !== null) {
     const entries = Object.entries(data);
+
     if (entries.length === 0) {
-      return <span className="text-dark-text-secondary">{'{}'}</span>;
+      return (
+        <span className="text-dark-text-secondary">
+          {"{}"}
+        </span>
+      );
     }
 
     return (
       <div className="space-y-1">
         {entries.map(([key, value]) => {
-          const isComplex = typeof value === 'object' && value !== null;
-          const isCollapsed = collapsed[key];
-          
+          const uniqueKey = `${path}-${key}`;
+
+          const isComplex =
+            typeof value === "object" &&
+            value !== null;
+
+          const isCollapsed =
+            collapsed[uniqueKey];
+
           return (
-            <div key={key} className="ml-2">
+            <div key={uniqueKey} className="ml-2">
               <div className="flex items-start gap-2 group">
+
                 {isComplex && (
                   <button
-                    onClick={() => toggleCollapse(key)}
+                    onClick={() =>
+                      toggleCollapse(uniqueKey)
+                    }
                     className="mt-0.5 p-0.5 hover:bg-dark-secondary rounded transition"
                   >
-                    <ChevronRight className={`w-3 h-3 transition-transform ${isCollapsed ? '' : 'rotate-90'}`} />
+                    <ChevronRight
+                      className={`w-3 h-3 transition-transform ${isCollapsed
+                          ? ""
+                          : "rotate-90"
+                        }`}
+                    />
                   </button>
                 )}
-                <span className="text-primary-400 font-mono text-sm">{key}</span>
-                <span className="text-dark-text-secondary">:</span>
+
                 {!isComplex && (
-                  <div className="flex-1">
+                  <div className="w-4" />
+                )}
+
+                <span className="text-primary-400 font-mono text-sm">
+                  {key}
+                </span>
+
+                <span className="text-dark-text-secondary">
+                  :
+                </span>
+
+                {!isComplex && (
+                  <div className="flex-1 break-all">
                     {formatValue(value)}
-                    {!isComplex && <span className="text-dark-text-secondary text-xs ml-2">,</span>}
                   </div>
                 )}
               </div>
+
               {isComplex && !isCollapsed && (
                 <div className="ml-4 mt-1">
-                  <JSONViewer data={value} level={level + 1} />
+                  <JSONViewer
+                    data={value}
+                    level={level + 1}
+                    path={uniqueKey}
+                  />
                 </div>
               )}
+
               {isComplex && isCollapsed && (
                 <div className="ml-6 text-xs text-dark-text-secondary">
-                  {Array.isArray(value) ? `[...]` : `{...}`}
+                  {Array.isArray(value)
+                    ? "[...]"
+                    : "{...}"}
                 </div>
               )}
             </div>

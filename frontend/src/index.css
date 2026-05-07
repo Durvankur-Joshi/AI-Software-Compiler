@@ -12,31 +12,31 @@
   .json-viewer {
     @apply bg-dark-secondary text-dark-text p-4 rounded-xl overflow-auto font-mono text-xs border border-dark-border;
   }
-  
+
   .glass-effect {
     @apply bg-dark-surface/80 backdrop-blur-sm border border-dark-border;
   }
-  
+
   .gradient-border {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 1px;
     border-radius: 1rem;
   }
-  
+
   .gradient-border-inner {
     @apply bg-dark-surface rounded-xl;
   }
-  
+
   /* Custom Scrollbar */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
-  
+
   ::-webkit-scrollbar-track {
     @apply bg-dark-surface rounded-full;
   }
-  
+
   ::-webkit-scrollbar-thumb {
     @apply bg-dark-border rounded-full hover:bg-gray-600 transition;
   }
@@ -46,6 +46,7 @@
   0% {
     background-position: -1000px 0;
   }
+
   100% {
     background-position: 1000px 0;
   }
@@ -56,6 +57,7 @@
     transform: scale(0.8);
     opacity: 0.5;
   }
+
   100% {
     transform: scale(1.2);
     opacity: 0;
@@ -64,9 +66,30 @@
 
 .animate-shimmer {
   animation: shimmer 2s infinite linear;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
 }
 
 .animate-pulse-ring {
   animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+/* Custom Scrollbar */
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #111827;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
 }
