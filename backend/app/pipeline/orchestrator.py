@@ -8,6 +8,8 @@ from app.runtime.sqlite_runtime import SQLiteRuntime
 
 from app.services.supabase_service import supabase
 
+from app.generators.backend_code_generator import BackendCodeGenerator
+
 
 class PipelineOrchestrator:
 
@@ -20,6 +22,8 @@ class PipelineOrchestrator:
         self.repair_engine = RepairEngine()
 
         self.runtime = SQLiteRuntime()
+        
+        self.backend_generator = BackendCodeGenerator()
 
     def run(self, user_prompt: str):
 
@@ -84,6 +88,11 @@ class PipelineOrchestrator:
         except Exception as e:
 
             print("SUPABASE ERROR:", e)
+            
+        self.backend_generator.generate(
+             db_schema,
+             api_schema
+        )
 
         return {
 
