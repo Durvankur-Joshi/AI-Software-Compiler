@@ -12,8 +12,8 @@ def get__admin_users():
     }
 
 
-@router.delete("/admin/users/{id}")
-def delete__admin_users_id():
+@router.put("/admin/users/{id}")
+def put__admin_users_id():
 
     return {
         "message": "/admin/users/{id} works"
