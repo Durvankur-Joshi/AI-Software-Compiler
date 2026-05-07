@@ -17,17 +17,17 @@ class SQLiteRuntime:
 
         cursor = connection.cursor()
 
-        for table in db_schema.tables:
+        for table in db_schema["tables"]:
 
             columns = []
 
-            for column in table.columns:
+            for column in table["columns"]:
 
                 # Prevent duplicate id column
-                if column.name.lower() == "id":
+                if column["name"].lower() == "id":
                     continue
 
-                sql_type = column.type.upper()
+                sql_type = column["type"].upper()
 
                 if sql_type not in [
                     "TEXT",
@@ -37,12 +37,12 @@ class SQLiteRuntime:
                     sql_type = "TEXT"
 
                 columns.append(
-                    f"{column.name} {sql_type}"
+                    f'{column["name"]} {sql_type}'
                 )
 
             query = f"""
             CREATE TABLE IF NOT EXISTS
-            {table.table_name}
+            {table["table_name"]}
             (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 {",".join(columns)}

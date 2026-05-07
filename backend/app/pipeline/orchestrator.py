@@ -1,5 +1,38 @@
 from app.pipeline.compiler_agent import CompilerAgent
 
+from app.pipeline.validator import SchemaValidator
+
+from app.pipeline.repair_engine import RepairEngine
+
+from app.runtime.sqlite_runtime import SQLiteRuntime
+
+from app.services.supabase_service import supabase
+
+
+class PipelineOrchestrator:
+
+    def __init__(self):
+
+        self.compiler_agent = CompilerAgent()
+
+        self.validator = SchemaValidator()
+
+        self.repair_engine = RepairEngine()
+
+        self.runtime = SQLiteRuntime()
+
+    def run(self, user_prompt: str):
+
+        result = self.compiler_agent.run(user_prompt)
+
+        intent = result["intent"]
+
+        architecture = result["architecture"]
+
+        db_schema = result["database"]
+
+        api_schema = result["api"]
+
         ui_schema = result["ui"]
 
         auth_schema = result["auth"]

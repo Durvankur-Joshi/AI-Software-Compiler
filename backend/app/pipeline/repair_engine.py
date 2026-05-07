@@ -6,18 +6,60 @@ class RepairEngine:
         db_schema
     ):
 
-        valid_fields = set()
+        db_fields = set()
 
-        for table in db_schema.tables:
-            for column in table.columns:
-                valid_fields.add(column.name)
+        for table in db_schema.get("tables", []):
 
-        for endpoint in api_schema.endpoints:
+            for column in table.get("columns", []):
 
-            endpoint.request_fields = [
-                field
-                for field in endpoint.request_fields
-                if field in valid_fields
-            ]
+                db_fields.add(
+                    column["name"]
+                )
+
+        for endpoint in api_schema.get("endpoints", []):
+
+            fixed_request_fields = []
+
+            for field in endpoint.get(
+                "request_fields",
+                []
+            ):
+
+                if (
+                    field in db_fields
+                    or field == "password"
+                ):
+
+                    fixed_request_fields.append(
+                        field
+                    )
+
+            endpoint["request_fields"] = (
+                fixed_request_fields
+            )
+
+            fixed_response_fields = []
+
+            for field in endpoint.get(
+                "response_fields",
+                []
+            ):
+
+                if (
+                    field in db_fields
+                    or field in [
+                        "token",
+                        "message",
+                        "data"
+                    ]
+                ):
+
+                    fixed_response_fields.append(
+                        field
+                    )
+
+            endpoint["response_fields"] = (
+                fixed_response_fields
+            )
 
         return api_schema

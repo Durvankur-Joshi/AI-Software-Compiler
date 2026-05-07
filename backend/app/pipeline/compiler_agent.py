@@ -48,7 +48,7 @@ Required JSON Structure:
         "table_name": "string",
         "columns": [
           {{
-            "name": "string",
+            "name": "id",
             "type": "TEXT",
             "required": true
           }}
@@ -74,4 +74,27 @@ Required JSON Structure:
         "name": "string",
         "components": []
       }}
+    ]
+  }},
+
+  "auth": {{
+    "roles": ["string"],
+    "permissions": []
+  }}
+}}
+
+Rules:
+
+1. Every database table MUST contain id field.
+2. Use TEXT datatype for SQLite.
+3. Create CRUD APIs.
+4. Include login/register APIs.
+5. Include admin permissions if admin exists.
+6. Return VALID JSON ONLY.
+7. No markdown.
+8. No explanation.
+"""
+
+        response = gemini_service.generate_json(prompt)
+
         return json.loads(response)

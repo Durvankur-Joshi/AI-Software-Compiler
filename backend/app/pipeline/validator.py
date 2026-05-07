@@ -1,6 +1,112 @@
 class SchemaValidator:
+
+    def validate(
+        self,
+        database_schema,
+        api_schema,
+        ui_schema,
+        auth_schema
+    ):
+
+        errors = []
+
+        errors.extend(
+            self.validate_database(
+                database_schema
+            )
+        )
+
+        errors.extend(
+            self.validate_api_vs_db(
+                database_schema,
+                api_schema
+            )
+        )
+
+        errors.extend(
+            self.validate_auth_vs_api(
+                api_schema,
+                auth_schema
+            )
+        )
+
+        errors.extend(
+            self.validate_ui_vs_api(
+                ui_schema,
+                api_schema
+            )
+        )
+
+        return errors
+
+    def validate_database(
+        self,
+        database_schema
+    ):
+
+        errors = []
+
+        for table in database_schema.get("tables", []):
+
+            column_names = [
+                column["name"]
+                for column in table.get("columns", [])
+            ]
+
+            if "id" not in column_names:
+
+                errors.append(
+                    f'{table["table_name"]} missing id field'
+                )
+
+        return errors
+
+    def validate_api_vs_db(
+        self,
+        database_schema,
+        api_schema
+    ):
+
+        errors = []
+
+        db_fields = set()
+
+        for table in database_schema.get("tables", []):
+
+            for column in table.get("columns", []):
+
+                db_fields.add(
+                    column["name"]
+                )
+
+        for endpoint in api_schema.get("endpoints", []):
+
+            for field in endpoint.get(
+                "request_fields",
+                []
+            ):
+
+                if (
                     field not in db_fields
-                    and field not in ["token", "message", "data"]
+                    and field != "password"
+                ):
+
+                    errors.append(
+                        f"API request field '{field}' not found in DB schema"
+                    )
+
+            for field in endpoint.get(
+                "response_fields",
+                []
+            ):
+
+                if (
+                    field not in db_fields
+                    and field not in [
+                        "token",
+                        "message",
+                        "data"
+                    ]
                 ):
 
                     errors.append(
@@ -21,11 +127,19 @@ class SchemaValidator:
 
         for endpoint in api_schema.get("endpoints", []):
 
-            api_routes.add(endpoint["path"])
+            api_routes.add(
+                endpoint["path"]
+            )
 
-        for permission in auth_schema.get("permissions", []):
+        for permission in auth_schema.get(
+            "permissions",
+            []
+        ):
 
-            for route in permission.get("allowed_routes", []):
+            for route in permission.get(
+                "allowed_routes",
+                []
+            ):
 
                 if route not in api_routes:
 
