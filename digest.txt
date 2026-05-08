@@ -35,8 +35,11 @@ Directory structure:
     │   │   │   ├── repair_prompt.py
     │   │   │   └── schema_prompt.py
     │   │   ├── routes/
+    │   │   │   ├── download.py
     │   │   │   └── generate.py
     │   │   ├── runtime/
+    │   │   │   ├── execution_validator.py
+    │   │   │   ├── project_exporter.py
     │   │   │   └── sqlite_runtime.py
     │   │   ├── schemas/
     │   │   │   ├── api_schema.py
@@ -55,39 +58,24 @@ Directory structure:
     │   │       ├── helpers.py
     │   │       └── retry.py
     │   └── generated/
-    │       └── backend/
-    │           ├── database.py
-    │           ├── main.py
-    │           ├── models/
-    │           │   ├── activities.py
-    │           │   ├── analytics.py
-    │           │   ├── analytics_data.py
-    │           │   ├── appointments.py
-    │           │   ├── contacts.py
-    │           │   ├── doctors.py
-    │           │   ├── medical_records.py
-    │           │   ├── patients.py
-    │           │   ├── projects.py
-    │           │   ├── subscriptions.py
-    │           │   ├── tasks.py
-    │           │   ├── team_memberships.py
-    │           │   ├── teams.py
-    │           │   └── users.py
-    │           └── routes/
-    │               ├── admin.py
-    │               ├── analytics.py
-    │               ├── appointments.py
-    │               ├── auth.py
-    │               ├── contacts.py
-    │               ├── dashboard.py
-    │               ├── doctors.py
-    │               ├── medical-records.py
-    │               ├── patients.py
-    │               ├── projects.py
-    │               ├── subscriptions.py
-    │               ├── tasks.py
-    │               ├── teams.py
-    │               └── users.py
+    │       ├── cbc2f816.zip
+    │       └── cbc2f816/
+    │           └── backend/
+    │               ├── database.py
+    │               ├── main.py
+    │               ├── requirements.txt
+    │               ├── models/
+    │               │   ├── analytics_data.py
+    │               │   ├── contacts.py
+    │               │   ├── subscriptions.py
+    │               │   └── users.py
+    │               └── routes/
+    │                   ├── admin.py
+    │                   ├── analytics.py
+    │                   ├── auth.py
+    │                   ├── contacts.py
+    │                   ├── dashboard.py
+    │                   └── subscriptions.py
     └── frontend/
         ├── README.md
         ├── eslint.config.js
@@ -104,6 +92,7 @@ Directory structure:
             ├── components/
             │   ├── ClarificationBox.jsx
             │   ├── MetricsPanel.jsx
+            │   ├── PipelineFlow.jsx
             │   ├── PromptForm.jsx
             │   └── ResultViewer.jsx
             └── services/
@@ -138,6 +127,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes.generate import router
 
+from app.routes import download
+
 
 app = FastAPI(
     title="AI Compiler System"
@@ -154,6 +145,7 @@ app.add_middleware(
 
 
 app.include_router(router)
+app.include_router(download.router)
 
 
 @app.get("/")
@@ -409,37 +401,45 @@ FILE: backend/app/evaluation/runner.py
 FILE: backend/app/generators/backend_generator.py
 ================================================
 import os
+import zipfile
 
 
 class BackendGenerator:
 
-    def generate(self, result):
+    def generate(self, result, project_id):
 
-        os.makedirs(
-            "generated/backend/routes",
-            exist_ok=True
-        )
+        base_path = f"generated/{project_id}/backend"
 
-        os.makedirs(
-            "generated/backend/models",
-            exist_ok=True
-        )
+        routes_path = f"{base_path}/routes"
+        models_path = f"{base_path}/models"
 
-        self.generate_database_file()
+        os.makedirs(routes_path, exist_ok=True)
+        os.makedirs(models_path, exist_ok=True)
+
+        self.generate_database_file(base_path)
 
         self.generate_models(
-            result["database"]
+            database_schema=result["database"],
+            base_path=base_path
         )
 
         self.generate_routes(
-            result["api"]
+            api_schema=result["api"],
+            base_path=base_path
         )
 
         self.generate_main_file(
-            result["api"]
+            api_schema=result["api"],
+            base_path=base_path
         )
 
-    def generate_database_file(self):
+        self.generate_requirements_file(
+            base_path=base_path
+        )
+
+        self.create_zip(project_id)
+
+    def generate_database_file(self, base_path):
 
         content = """
 from sqlalchemy import create_engine
@@ -463,7 +463,7 @@ Base = declarative_base()
 """
 
         with open(
-            "generated/backend/database.py",
+            f"{base_path}/database.py",
             "w",
             encoding="utf-8"
         ) as file:
@@ -472,7 +472,8 @@ Base = declarative_base()
 
     def generate_models(
         self,
-        database_schema
+        database_schema,
+        base_path
     ):
 
         for table in database_schema.get(
@@ -517,7 +518,7 @@ Base = declarative_base()
 
             model_code = f'''
 from sqlalchemy import Column, Integer, String, Boolean
-from app.database import Base
+from database import Base
 
 
 class {class_name}(Base):
@@ -528,7 +529,7 @@ class {class_name}(Base):
 '''
 
             with open(
-                f'generated/backend/models/{table["table_name"]}.py',
+                f'{base_path}/models/{table["table_name"]}.py',
                 "w",
                 encoding="utf-8"
             ) as file:
@@ -537,7 +538,8 @@ class {class_name}(Base):
 
     def generate_routes(
         self,
-        api_schema
+        api_schema,
+        base_path
     ):
 
         grouped_routes = {}
@@ -596,7 +598,7 @@ def {function_name}():
 '''
 
             with open(
-                f"generated/backend/routes/{route_group}.py",
+                f"{base_path}/routes/{route_group}.py",
                 "w",
                 encoding="utf-8"
             ) as file:
@@ -605,7 +607,8 @@ def {function_name}():
 
     def generate_main_file(
         self,
-        api_schema
+        api_schema,
+        base_path
     ):
 
         route_groups = set()
@@ -656,12 +659,65 @@ def root():
 '''
 
         with open(
-            "generated/backend/main.py",
+            f"{base_path}/main.py",
             "w",
             encoding="utf-8"
         ) as file:
 
             file.write(main_code)
+
+    def generate_requirements_file(
+        self,
+        base_path
+    ):
+
+        requirements = """
+fastapi
+uvicorn
+sqlalchemy
+"""
+
+        with open(
+            f"{base_path}/requirements.txt",
+            "w",
+            encoding="utf-8"
+        ) as file:
+
+            file.write(requirements)
+
+    def create_zip(
+        self,
+        project_id
+    ):
+
+        folder_path = f"generated/{project_id}"
+
+        zip_path = f"generated/{project_id}.zip"
+
+        with zipfile.ZipFile(
+            zip_path,
+            "w",
+            zipfile.ZIP_DEFLATED
+        ) as zipf:
+
+            for root, dirs, files in os.walk(folder_path):
+
+                for file in files:
+
+                    file_path = os.path.join(
+                        root,
+                        file
+                    )
+
+                    arcname = os.path.relpath(
+                        file_path,
+                        folder_path
+                    )
+
+                    zipf.write(
+                        file_path,
+                        arcname
+                    )
 
 
 ================================================
@@ -924,6 +980,12 @@ Required JSON Structure:
   "auth": {{
     "roles": ["string"],
     "permissions": []
+  }},
+
+  "business_logic": {{
+    "role_rules": ["string"],
+    "premium_features": ["string"],
+    "restrictions": ["string"]
   }}
 }}
 
@@ -937,17 +999,16 @@ Rules:
 6. Return VALID JSON ONLY.
 7. No markdown.
 8. No explanation.
+9. Include business logic rules.
+10. Include role-based restrictions.
+11. Include premium feature gating if applicable.
+12. Restrictions must be human-readable strings.
 """
 
         response = gemini_service.generate_json(prompt)
 
         result = self.json_repair.repair(
             response
-        )
-
-        # Inject fake invalid field for testing
-        result["api"]["endpoints"][0]["request_fields"].append(
-            "fake_field_xyz"
         )
 
         return result
@@ -1019,7 +1080,9 @@ from app.pipeline.clarification_engine import ClarificationEngine
 from app.pipeline.regeneration_engine import RegenerationEngine
 from app.pipeline.retry_handler import RetryHandler
 from app.monitoring.metrics import MetricsTracker
-
+from app.runtime.execution_validator import ExecutionValidator
+from app.runtime.project_exporter import ProjectExporter
+import uuid
 
 class PipelineOrchestrator:
 
@@ -1042,8 +1105,14 @@ class PipelineOrchestrator:
         self.retry_handler = RetryHandler()
 
         self.metrics = MetricsTracker()
+        
+        self.execution_validator = ExecutionValidator()
+        
+        self.project_exporter = ProjectExporter()
 
     def run(self, user_prompt: str):
+        
+        project_id = str(uuid.uuid4())[:8]
 
         start_time = self.metrics.start_timer()
 
@@ -1091,12 +1160,18 @@ class PipelineOrchestrator:
         ui_schema = result["ui"]
 
         auth_schema = result["auth"]
+        
+        business_logic = result.get(
+           "business_logic",
+           {}
+        )
 
         validation_errors = self.validator.validate(
             database_schema=db_schema,
             api_schema=api_schema,
             ui_schema=ui_schema,
-            auth_schema=auth_schema
+            auth_schema=auth_schema,
+            business_logic= business_logic,
         )
 
         repaired = False
@@ -1179,6 +1254,8 @@ class PipelineOrchestrator:
                 "ui_schema": ui_schema,
 
                 "auth_schema": auth_schema,
+                
+                "business_logic": business_logic,
 
                 "validation_errors": validation_errors,
 
@@ -1194,7 +1271,16 @@ class PipelineOrchestrator:
         result["api"] = api_schema
 
         self.backend_generator.generate(
-            result
+            result,
+            project_id
+        )
+        
+        execution_report = (
+           self.execution_validator.validate()
+        )
+        
+        zip_path = self.project_exporter.export_backend(
+            project_id
         )
 
         latency = self.metrics.end_timer(
@@ -1207,24 +1293,32 @@ class PipelineOrchestrator:
 
         return {
 
-            "intent": intent,
+          "intent": intent,
 
-            "architecture": architecture,
+          "architecture": architecture,
 
-            "database": db_schema,
+          "database": db_schema,
 
-            "api": api_schema,
+          "api": api_schema,
 
-            "ui": ui_schema,
+          "ui": ui_schema,
 
-            "auth": auth_schema,
+          "auth": auth_schema,
 
-            "validation_errors": validation_errors,
+          "business_logic": business_logic,
 
-            "repair_applied": repaired,
+          "validation_errors": validation_errors,
 
-            "metrics": self.metrics.get_metrics()
-        }
+          "repair_applied": repaired,
+
+          "metrics": self.metrics.get_metrics(),
+          
+          "execution_report": execution_report,
+          
+          "downloadable_project": zip_path,
+          
+          "project_id": project_id,
+}
 
 
 ================================================
@@ -1413,37 +1507,155 @@ class SchemaValidator:
         database_schema,
         api_schema,
         ui_schema,
-        auth_schema
+        auth_schema,
+        business_logic=None
     ):
 
         errors = []
 
-        errors.extend(
-            self.validate_database(
-                database_schema
-            )
+        database_fields = set()
+
+        # DATABASE VALIDATION
+
+        for table in database_schema.get(
+            "tables",
+            []
+        ):
+
+            column_names = []
+
+            for column in table.get(
+                "columns",
+                []
+            ):
+
+                column_name = column.get(
+                    "name"
+                )
+
+                database_fields.add(
+                    column_name
+                )
+
+                column_names.append(
+                    column_name
+                )
+
+            if "id" not in column_names:
+
+                errors.append(
+                    f"Table '{table['table_name']}' missing id field"
+                )
+
+        # API VALIDATION
+
+        for endpoint in api_schema.get(
+            "endpoints",
+            []
+        ):
+
+            for field in endpoint.get(
+                "request_fields",
+                []
+            ):
+
+                if (
+                    field not in database_fields
+                    and field != "password"
+                ):
+
+                    errors.append(
+                        f"API request field '{field}' not found in DB schema"
+                    )
+
+            for field in endpoint.get(
+                "response_fields",
+                []
+            ):
+
+                if (
+                    field not in database_fields
+                    and field not in [
+                        "token",
+                        "message"
+                    ]
+                ):
+
+                    errors.append(
+                        f"API response field '{field}' not found in DB schema"
+                    )
+
+        # UI VALIDATION
+
+        ui_pages = ui_schema.get(
+            "pages",
+            []
         )
 
-        errors.extend(
-            self.validate_api_vs_db(
-                database_schema,
-                api_schema
+        if len(ui_pages) == 0:
+
+            errors.append(
+                "UI schema contains no pages"
             )
+
+        # AUTH VALIDATION
+
+        auth_roles = auth_schema.get(
+            "roles",
+            []
         )
 
-        errors.extend(
-            self.validate_auth_vs_api(
-                api_schema,
-                auth_schema
-            )
-        )
+        if len(auth_roles) == 0:
 
-        errors.extend(
-            self.validate_ui_vs_api(
-                ui_schema,
-                api_schema
+            errors.append(
+                "Auth schema contains no roles"
             )
-        )
+
+        # BUSINESS LOGIC VALIDATION
+
+        if business_logic:
+
+            role_rules = business_logic.get(
+                "role_rules",
+                []
+            )
+
+            restrictions = business_logic.get(
+                "restrictions",
+                []
+            )
+
+            premium_features = business_logic.get(
+                "premium_features",
+                []
+            )
+
+            if not isinstance(
+                role_rules,
+                list
+            ):
+
+                errors.append(
+                    "business_logic.role_rules must be a list"
+                )
+
+            if not isinstance(
+                restrictions,
+                list
+            ):
+
+                errors.append(
+                    "business_logic.restrictions must be a list"
+                )
+
+            if not isinstance(
+                premium_features,
+                list
+            ):
+
+                errors.append(
+                    "business_logic.premium_features must be a list"
+                )
 
         return errors
 
@@ -1644,6 +1856,25 @@ FILE: backend/app/prompts/schema_prompt.py
 
 
 ================================================
+FILE: backend/app/routes/download.py
+================================================
+from fastapi import APIRouter
+from fastapi.responses import FileResponse
+
+router = APIRouter()
+
+
+@router.get("/download-backend")
+def download_backend():
+
+    return FileResponse(
+        path="generated_backend.zip",
+        filename="generated_backend.zip",
+        media_type="application/zip"
+    )
+
+
+================================================
 FILE: backend/app/routes/generate.py
 ================================================
 from fastapi import APIRouter
@@ -1669,6 +1900,109 @@ class PromptRequest(BaseModel):
 def generate(request: PromptRequest):
 
     return pipeline.run(request.prompt)
+
+
+================================================
+FILE: backend/app/runtime/execution_validator.py
+================================================
+import os
+
+
+class ExecutionValidator:
+
+    def validate(self):
+
+        errors = []
+
+        required_files = [
+
+            "generated/backend/main.py",
+
+            "generated/backend/database.py",
+        ]
+
+        required_directories = [
+
+            "generated/backend/routes",
+
+            "generated/backend/models",
+        ]
+
+        for file_path in required_files:
+
+            if not os.path.exists(file_path):
+
+                errors.append(
+                    f"Missing file: {file_path}"
+                )
+
+        for directory in required_directories:
+
+            if not os.path.exists(directory):
+
+                errors.append(
+                    f"Missing directory: {directory}"
+                )
+
+        routes_path = "generated/backend/routes"
+
+        models_path = "generated/backend/models"
+
+        route_files = os.listdir(
+            routes_path
+        ) if os.path.exists(routes_path) else []
+
+        model_files = os.listdir(
+            models_path
+        ) if os.path.exists(models_path) else []
+
+        if len(route_files) == 0:
+
+            errors.append(
+                "No route files generated"
+            )
+
+        if len(model_files) == 0:
+
+            errors.append(
+                "No model files generated"
+            )
+
+        return {
+
+            "valid": len(errors) == 0,
+
+            "errors": errors,
+
+            "generated_routes": route_files,
+
+            "generated_models": model_files
+        }
+
+
+================================================
+FILE: backend/app/runtime/project_exporter.py
+================================================
+import shutil
+
+
+class ProjectExporter:
+
+    def export_backend(self, project_id):
+
+        output_zip = f"generated/{project_id}"
+
+        generated_path = (
+            f"generated/{project_id}/backend"
+        )
+
+        zip_path = shutil.make_archive(
+            output_zip,
+            "zip",
+            generated_path
+        )
+
+        return zip_path
 
 
 ================================================
@@ -1985,7 +2319,13 @@ FILE: backend/app/utils/retry.py
 
 
 ================================================
-FILE: backend/generated/backend/database.py
+FILE: backend/generated/cbc2f816.zip
+================================================
+[Binary file]
+
+
+================================================
+FILE: backend/generated/cbc2f816/backend/database.py
 ================================================
 
 from sqlalchemy import create_engine
@@ -2010,24 +2350,26 @@ Base = declarative_base()
 
 
 ================================================
-FILE: backend/generated/backend/main.py
+FILE: backend/generated/cbc2f816/backend/main.py
 ================================================
 
 from fastapi import FastAPI
 
-from routes import tasks
+from routes import contacts
+from routes import subscriptions
+from routes import dashboard
+from routes import analytics
 from routes import auth
-from routes import projects
-from routes import teams
-from routes import users
+from routes import admin
 
 app = FastAPI()
 
-app.include_router(tasks.router)
+app.include_router(contacts.router)
+app.include_router(subscriptions.router)
+app.include_router(dashboard.router)
+app.include_router(analytics.router)
 app.include_router(auth.router)
-app.include_router(projects.router)
-app.include_router(teams.router)
-app.include_router(users.router)
+app.include_router(admin.router)
 
 
 @app.get("/")
@@ -2040,51 +2382,21 @@ def root():
 
 
 ================================================
-FILE: backend/generated/backend/models/activities.py
+FILE: backend/generated/cbc2f816/backend/requirements.txt
+================================================
+
+fastapi
+uvicorn
+sqlalchemy
+
+
+
+================================================
+FILE: backend/generated/cbc2f816/backend/models/analytics_data.py
 ================================================
 
 from sqlalchemy import Column, Integer, String, Boolean
-from app.database import Base
-
-
-class Activities(Base):
-
-    __tablename__ = "activities"
-
-    id = Column(Integer, primary_key=True, index=True)
-    contact_id = Column(String)
-    user_id = Column(String)
-    type = Column(String)
-    description = Column(String)
-    timestamp = Column(String)
-
-
-
-================================================
-FILE: backend/generated/backend/models/analytics.py
-================================================
-
-from sqlalchemy import Column, Integer, String, Boolean
-from app.database import Base
-
-
-class Analytics(Base):
-
-    __tablename__ = "analytics"
-
-    id = Column(Integer, primary_key=True, index=True)
-    date = Column(String)
-    metric_name = Column(String)
-    metric_value = Column(String)
-
-
-
-================================================
-FILE: backend/generated/backend/models/analytics_data.py
-================================================
-
-from sqlalchemy import Column, Integer, String, Boolean
-from app.database import Base
+from database import Base
 
 
 class Analytics_data(Base):
@@ -2092,40 +2404,20 @@ class Analytics_data(Base):
     __tablename__ = "analytics_data"
 
     id = Column(Integer, primary_key=True, index=True)
-    date = Column(String)
-    metric_name = Column(String)
-    metric_value = Column(String)
     user_id = Column(String)
+    date = Column(String)
+    contacts_added = Column(Integer)
+    contacts_updated = Column(Integer)
+    contacts_deleted = Column(Integer)
 
 
 
 ================================================
-FILE: backend/generated/backend/models/appointments.py
-================================================
-
-from sqlalchemy import Column, Integer, String, Boolean
-from app.database import Base
-
-
-class Appointments(Base):
-
-    __tablename__ = "appointments"
-
-    id = Column(Integer, primary_key=True, index=True)
-    patient_id = Column(String)
-    doctor_id = Column(String)
-    appointment_datetime = Column(String)
-    reason = Column(String)
-    status = Column(String)
-
-
-
-================================================
-FILE: backend/generated/backend/models/contacts.py
+FILE: backend/generated/cbc2f816/backend/models/contacts.py
 ================================================
 
 from sqlalchemy import Column, Integer, String, Boolean
-from app.database import Base
+from database import Base
 
 
 class Contacts(Base):
@@ -2133,109 +2425,22 @@ class Contacts(Base):
     __tablename__ = "contacts"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String)
     first_name = Column(String)
     last_name = Column(String)
     email = Column(String)
     phone = Column(String)
     company = Column(String)
-    user_id = Column(String)
+    status = Column(String)
 
 
 
 ================================================
-FILE: backend/generated/backend/models/doctors.py
-================================================
-
-from sqlalchemy import Column, Integer, String, Boolean
-from app.database import Base
-
-
-class Doctors(Base):
-
-    __tablename__ = "doctors"
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(String)
-    first_name = Column(String)
-    last_name = Column(String)
-    specialization = Column(String)
-    contact_number = Column(String)
-    email = Column(String)
-
-
-
-================================================
-FILE: backend/generated/backend/models/medical_records.py
+FILE: backend/generated/cbc2f816/backend/models/subscriptions.py
 ================================================
 
 from sqlalchemy import Column, Integer, String, Boolean
-from app.database import Base
-
-
-class Medical_records(Base):
-
-    __tablename__ = "medical_records"
-
-    id = Column(Integer, primary_key=True, index=True)
-    patient_id = Column(String)
-    doctor_id = Column(String)
-    record_date = Column(String)
-    diagnosis = Column(String)
-    prescription = Column(String)
-    notes = Column(String)
-
-
-
-================================================
-FILE: backend/generated/backend/models/patients.py
-================================================
-
-from sqlalchemy import Column, Integer, String, Boolean
-from app.database import Base
-
-
-class Patients(Base):
-
-    __tablename__ = "patients"
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(String)
-    first_name = Column(String)
-    last_name = Column(String)
-    date_of_birth = Column(String)
-    gender = Column(String)
-    contact_number = Column(String)
-    email = Column(String)
-    address = Column(String)
-
-
-
-================================================
-FILE: backend/generated/backend/models/projects.py
-================================================
-
-from sqlalchemy import Column, Integer, String, Boolean
-from app.database import Base
-
-
-class Projects(Base):
-
-    __tablename__ = "projects"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-    description = Column(String)
-    team_id = Column(String)
-    deadline = Column(String)
-
-
-
-================================================
-FILE: backend/generated/backend/models/subscriptions.py
-================================================
-
-from sqlalchemy import Column, Integer, String, Boolean
-from app.database import Base
+from database import Base
 
 
 class Subscriptions(Base):
@@ -2252,69 +2457,11 @@ class Subscriptions(Base):
 
 
 ================================================
-FILE: backend/generated/backend/models/tasks.py
+FILE: backend/generated/cbc2f816/backend/models/users.py
 ================================================
 
 from sqlalchemy import Column, Integer, String, Boolean
-from app.database import Base
-
-
-class Tasks(Base):
-
-    __tablename__ = "tasks"
-
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String)
-    description = Column(String)
-    project_id = Column(String)
-    assigned_to_user_id = Column(String)
-    due_date = Column(String)
-    status = Column(String)
-
-
-
-================================================
-FILE: backend/generated/backend/models/team_memberships.py
-================================================
-
-from sqlalchemy import Column, Integer, String, Boolean
-from app.database import Base
-
-
-class Team_memberships(Base):
-
-    __tablename__ = "team_memberships"
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(String)
-    team_id = Column(String)
-
-
-
-================================================
-FILE: backend/generated/backend/models/teams.py
-================================================
-
-from sqlalchemy import Column, Integer, String, Boolean
-from app.database import Base
-
-
-class Teams(Base):
-
-    __tablename__ = "teams"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-    description = Column(String)
-
-
-
-================================================
-FILE: backend/generated/backend/models/users.py
-================================================
-
-from sqlalchemy import Column, Integer, String, Boolean
-from app.database import Base
+from database import Base
 
 
 class Users(Base):
@@ -2322,7 +2469,6 @@ class Users(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String)
     email = Column(String)
     password_hash = Column(String)
     role = Column(String)
@@ -2330,7 +2476,7 @@ class Users(Base):
 
 
 ================================================
-FILE: backend/generated/backend/routes/admin.py
+FILE: backend/generated/cbc2f816/backend/routes/admin.py
 ================================================
 
 from fastapi import APIRouter
@@ -2346,17 +2492,9 @@ def get__admin_users():
     }
 
 
-@router.put("/admin/users/{id}")
-def put__admin_users_id():
-
-    return {
-        "message": "/admin/users/{id} works"
-    }
-
-
 
 ================================================
-FILE: backend/generated/backend/routes/analytics.py
+FILE: backend/generated/cbc2f816/backend/routes/analytics.py
 ================================================
 
 from fastapi import APIRouter
@@ -2374,57 +2512,7 @@ def get__analytics():
 
 
 ================================================
-FILE: backend/generated/backend/routes/appointments.py
-================================================
-
-from fastapi import APIRouter
-
-router = APIRouter()
-
-
-@router.post("/appointments")
-def post__appointments():
-
-    return {
-        "message": "/appointments works"
-    }
-
-
-@router.get("/appointments")
-def get__appointments():
-
-    return {
-        "message": "/appointments works"
-    }
-
-
-@router.get("/appointments/{id}")
-def get__appointments_id():
-
-    return {
-        "message": "/appointments/{id} works"
-    }
-
-
-@router.put("/appointments/{id}")
-def put__appointments_id():
-
-    return {
-        "message": "/appointments/{id} works"
-    }
-
-
-@router.delete("/appointments/{id}")
-def delete__appointments_id():
-
-    return {
-        "message": "/appointments/{id} works"
-    }
-
-
-
-================================================
-FILE: backend/generated/backend/routes/auth.py
+FILE: backend/generated/cbc2f816/backend/routes/auth.py
 ================================================
 
 from fastapi import APIRouter
@@ -2450,7 +2538,7 @@ def post__auth_login():
 
 
 ================================================
-FILE: backend/generated/backend/routes/contacts.py
+FILE: backend/generated/cbc2f816/backend/routes/contacts.py
 ================================================
 
 from fastapi import APIRouter
@@ -2500,7 +2588,7 @@ def delete__contacts_id():
 
 
 ================================================
-FILE: backend/generated/backend/routes/dashboard.py
+FILE: backend/generated/cbc2f816/backend/routes/dashboard.py
 ================================================
 
 from fastapi import APIRouter
@@ -2518,207 +2606,7 @@ def get__dashboard():
 
 
 ================================================
-FILE: backend/generated/backend/routes/doctors.py
-================================================
-
-from fastapi import APIRouter
-
-router = APIRouter()
-
-
-@router.post("/doctors")
-def post__doctors():
-
-    return {
-        "message": "/doctors works"
-    }
-
-
-@router.get("/doctors")
-def get__doctors():
-
-    return {
-        "message": "/doctors works"
-    }
-
-
-@router.get("/doctors/{id}")
-def get__doctors_id():
-
-    return {
-        "message": "/doctors/{id} works"
-    }
-
-
-@router.put("/doctors/{id}")
-def put__doctors_id():
-
-    return {
-        "message": "/doctors/{id} works"
-    }
-
-
-@router.delete("/doctors/{id}")
-def delete__doctors_id():
-
-    return {
-        "message": "/doctors/{id} works"
-    }
-
-
-
-================================================
-FILE: backend/generated/backend/routes/medical-records.py
-================================================
-
-from fastapi import APIRouter
-
-router = APIRouter()
-
-
-@router.post("/medical-records")
-def post__medical-records():
-
-    return {
-        "message": "/medical-records works"
-    }
-
-
-@router.get("/medical-records")
-def get__medical-records():
-
-    return {
-        "message": "/medical-records works"
-    }
-
-
-@router.get("/medical-records/{id}")
-def get__medical-records_id():
-
-    return {
-        "message": "/medical-records/{id} works"
-    }
-
-
-@router.put("/medical-records/{id}")
-def put__medical-records_id():
-
-    return {
-        "message": "/medical-records/{id} works"
-    }
-
-
-@router.delete("/medical-records/{id}")
-def delete__medical-records_id():
-
-    return {
-        "message": "/medical-records/{id} works"
-    }
-
-
-
-================================================
-FILE: backend/generated/backend/routes/patients.py
-================================================
-
-from fastapi import APIRouter
-
-router = APIRouter()
-
-
-@router.post("/patients")
-def post__patients():
-
-    return {
-        "message": "/patients works"
-    }
-
-
-@router.get("/patients")
-def get__patients():
-
-    return {
-        "message": "/patients works"
-    }
-
-
-@router.get("/patients/{id}")
-def get__patients_id():
-
-    return {
-        "message": "/patients/{id} works"
-    }
-
-
-@router.put("/patients/{id}")
-def put__patients_id():
-
-    return {
-        "message": "/patients/{id} works"
-    }
-
-
-@router.delete("/patients/{id}")
-def delete__patients_id():
-
-    return {
-        "message": "/patients/{id} works"
-    }
-
-
-
-================================================
-FILE: backend/generated/backend/routes/projects.py
-================================================
-
-from fastapi import APIRouter
-
-router = APIRouter()
-
-
-@router.post("/projects")
-def post__projects():
-
-    return {
-        "message": "/projects works"
-    }
-
-
-@router.get("/projects")
-def get__projects():
-
-    return {
-        "message": "/projects works"
-    }
-
-
-@router.get("/projects/{project_id}")
-def get__projects_project_id():
-
-    return {
-        "message": "/projects/{project_id} works"
-    }
-
-
-@router.put("/projects/{project_id}")
-def put__projects_project_id():
-
-    return {
-        "message": "/projects/{project_id} works"
-    }
-
-
-@router.delete("/projects/{project_id}")
-def delete__projects_project_id():
-
-    return {
-        "message": "/projects/{project_id} works"
-    }
-
-
-
-================================================
-FILE: backend/generated/backend/routes/subscriptions.py
+FILE: backend/generated/cbc2f816/backend/routes/subscriptions.py
 ================================================
 
 from fastapi import APIRouter
@@ -2739,148 +2627,6 @@ def post__subscriptions():
 
     return {
         "message": "/subscriptions works"
-    }
-
-
-
-================================================
-FILE: backend/generated/backend/routes/tasks.py
-================================================
-
-from fastapi import APIRouter
-
-router = APIRouter()
-
-
-@router.post("/tasks")
-def post__tasks():
-
-    return {
-        "message": "/tasks works"
-    }
-
-
-@router.get("/tasks")
-def get__tasks():
-
-    return {
-        "message": "/tasks works"
-    }
-
-
-@router.get("/tasks/{task_id}")
-def get__tasks_task_id():
-
-    return {
-        "message": "/tasks/{task_id} works"
-    }
-
-
-@router.put("/tasks/{task_id}")
-def put__tasks_task_id():
-
-    return {
-        "message": "/tasks/{task_id} works"
-    }
-
-
-@router.delete("/tasks/{task_id}")
-def delete__tasks_task_id():
-
-    return {
-        "message": "/tasks/{task_id} works"
-    }
-
-
-
-================================================
-FILE: backend/generated/backend/routes/teams.py
-================================================
-
-from fastapi import APIRouter
-
-router = APIRouter()
-
-
-@router.post("/teams")
-def post__teams():
-
-    return {
-        "message": "/teams works"
-    }
-
-
-@router.get("/teams")
-def get__teams():
-
-    return {
-        "message": "/teams works"
-    }
-
-
-@router.get("/teams/{team_id}")
-def get__teams_team_id():
-
-    return {
-        "message": "/teams/{team_id} works"
-    }
-
-
-@router.put("/teams/{team_id}")
-def put__teams_team_id():
-
-    return {
-        "message": "/teams/{team_id} works"
-    }
-
-
-@router.delete("/teams/{team_id}")
-def delete__teams_team_id():
-
-    return {
-        "message": "/teams/{team_id} works"
-    }
-
-
-@router.post("/teams/{team_id}/members")
-def post__teams_team_id_members():
-
-    return {
-        "message": "/teams/{team_id}/members works"
-    }
-
-
-@router.get("/teams/{team_id}/members")
-def get__teams_team_id_members():
-
-    return {
-        "message": "/teams/{team_id}/members works"
-    }
-
-
-
-================================================
-FILE: backend/generated/backend/routes/users.py
-================================================
-
-from fastapi import APIRouter
-
-router = APIRouter()
-
-
-@router.get("/users")
-def get__users():
-
-    return {
-        "message": "/users works"
-    }
-
-
-@router.get("/users/{user_id}")
-def get__users_user_id():
-
-    return {
-        "message": "/users/{user_id} works"
     }
 
 
@@ -3295,7 +3041,7 @@ FILE: frontend/src/App.css
 ================================================
 FILE: frontend/src/App.jsx
 ================================================
-Error reading file with 'cp1252': 'charmap' codec can't decode byte 0x8f in position 10647: character maps to <undefined>
+Error reading file with 'cp1252': 'charmap' codec can't decode byte 0x8f in position 10731: character maps to <undefined>
 
 
 ================================================
@@ -3612,6 +3358,116 @@ export default MetricsPanel;
 
 
 ================================================
+FILE: frontend/src/components/PipelineFlow.jsx
+================================================
+import React from "react";
+import {
+  MessageSquare,
+  Brain,
+  GitBranch,
+  Database,
+  ShieldCheck,
+  Wrench,
+  RefreshCw,
+  PlayCircle,
+  Code2,
+} from "lucide-react";
+
+const stages = [
+  {
+    title: "Clarification",
+    icon: MessageSquare,
+    desc: "Detects vague or conflicting prompts",
+  },
+  {
+    title: "Intent Extraction",
+    icon: Brain,
+    desc: "Extracts app goals, roles, and features",
+  },
+  {
+    title: "Architecture Design",
+    icon: GitBranch,
+    desc: "Builds entities, modules, and flows",
+  },
+  {
+    title: "Schema Generation",
+    icon: Database,
+    desc: "Generates DB, API, UI, and Auth schemas",
+  },
+  {
+    title: "Validation",
+    icon: ShieldCheck,
+    desc: "Checks consistency across all layers",
+  },
+  {
+    title: "Repair Engine",
+    icon: Wrench,
+    desc: "Repairs invalid or hallucinated fields",
+  },
+  {
+    title: "Regeneration",
+    icon: RefreshCw,
+    desc: "Regenerates broken sections only",
+  },
+  {
+    title: "Runtime Execution",
+    icon: PlayCircle,
+    desc: "Creates executable SQLite application",
+  },
+  {
+    title: "Backend Generator",
+    icon: Code2,
+    desc: "Generates FastAPI backend structure",
+  },
+];
+
+const PipelineFlow = () => {
+  return (
+    <div className="glass-effect rounded-2xl border border-dark-border p-6">
+      <h2 className="text-2xl font-bold mb-6">
+        Compiler Pipeline
+      </h2>
+
+      <div className="grid md:grid-cols-3 gap-4">
+        {stages.map((stage, index) => {
+          const Icon = stage.icon;
+
+          return (
+            <div
+              key={index}
+              className="rounded-xl border border-dark-border bg-dark-surface p-4 hover:border-primary-500 transition-all duration-300"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-primary-500/10">
+                  <Icon className="w-5 h-5 text-primary-400" />
+                </div>
+
+                <div>
+                  <p className="text-sm text-dark-text-secondary">
+                    Stage {index + 1}
+                  </p>
+
+                  <h3 className="font-semibold">
+                    {stage.title}
+                  </h3>
+                </div>
+              </div>
+
+              <p className="text-sm text-dark-text-secondary leading-relaxed">
+                {stage.desc}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default PipelineFlow;
+
+
+================================================
 FILE: frontend/src/components/PromptForm.jsx
 ================================================
 import React, { useState } from 'react';
@@ -3756,7 +3612,7 @@ export default PromptForm;
 FILE: frontend/src/components/ResultViewer.jsx
 ================================================
 import React, { useState } from 'react';
-import { Eye, Code2, Copy, Check, Database, Cpu, Shield, Layout, GitBranch, ChevronRight } from 'lucide-react';
+import { Eye, Code2, Copy, Check, Database, Cpu, Shield, Brain, Layout, GitBranch, ChevronRight } from 'lucide-react';
 
 const ResultViewer = ({ result }) => {
   const [activeTab, setActiveTab] = useState('intent');
@@ -3769,6 +3625,7 @@ const ResultViewer = ({ result }) => {
     { id: 'api', label: 'API', icon: Code2, color: 'accent-pink' },
     { id: 'ui', label: 'UI', icon: Layout, color: 'primary' },
     { id: 'auth', label: 'Auth', icon: Shield, color: 'accent-purple' },
+    { id: 'business_logic', label: 'Logic', icon: Brain, color: 'accent-pink' },
   ];
 
   const getTabContent = () => {
@@ -3793,7 +3650,7 @@ const ResultViewer = ({ result }) => {
   return (
     <div className="glass-effect rounded-xl overflow-hidden border border-dark-border animate-scale-up max-h-[85vh] flex flex-col">
       {/* Header */}
-      <div className="flex items-center  justify-between p-4 border-b border-dark-border bg-dark-surface/50">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-b border-dark-border bg-dark-surface/50">
         <div className="flex items-center gap-2">
           <Code2 className="w-5 h-5 text-primary-500" />
           <span className="font-mono text-sm font-medium">Generated Output</span>
@@ -3801,47 +3658,57 @@ const ResultViewer = ({ result }) => {
             {new Date().toLocaleTimeString()}
           </span>
         </div>
+        <div className="flex items-center gap-3">
+          <a
+            href={`http://127.0.0.1:8000/download/${result.project_id}`}
+            target="_blank"
+            rel="noreferrer"
+            className="px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600 transition-colors whitespace-nowrap"
+          >
+            Download Backend
+          </a>
         <button
           onClick={handleCopyAll}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-dark-secondary hover:bg-dark-border transition-all duration-300 text-sm"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-dark-secondary hover:bg-dark-border transition-all duration-300 text-sm whitespace-nowrap"
         >
           {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
           <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy All'}</span>
         </button>
       </div>
-
-      {/* Tabs */}
-      <div className="border-b border-dark-border pb-3 ">
-        <div className="flex">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`group relative px-4 py-3 text-sm font-medium transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${isActive
-                  ? 'text-primary-400 bg-dark-surface'
-                  : 'text-dark-text-secondary hover:text-dark-text hover:bg-dark-surface/50'
-                  }`}
-              >
-                <Icon className={`w-4 h-4 transition-colors ${isActive ? `text-${tab.color}-500` : 'opacity-50'
-                  }`} />
-                {tab.label}
-                {isActive && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary-500 to-accent-purple"></div>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-4 overflow-y-auto custom-scrollbar flex-1">
-        {getTabContent()}
-      </div>
     </div>
+
+      {/* Tabs */ }
+  <div className="border-b border-dark-border pb-3 ">
+    <div className="flex">
+      {tabs.map((tab) => {
+        const Icon = tab.icon;
+        const isActive = activeTab === tab.id;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`group relative px-4 py-3 text-sm font-medium transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${isActive
+              ? 'text-primary-400 bg-dark-surface'
+              : 'text-dark-text-secondary hover:text-dark-text hover:bg-dark-surface/50'
+              }`}
+          >
+            <Icon className={`w-4 h-4 transition-colors ${isActive ? `text-${tab.color}-500` : 'opacity-50'
+              }`} />
+            {tab.label}
+            {isActive && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary-500 to-accent-purple"></div>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+
+  {/* Content */ }
+  <div className="p-4 overflow-y-auto custom-scrollbar flex-1">
+    {getTabContent()}
+  </div>
+    </div >
   );
 };
 
@@ -3949,8 +3816,8 @@ const JSONViewer = ({ data, level = 0, path = "root" }) => {
                   >
                     <ChevronRight
                       className={`w-3 h-3 transition-transform ${isCollapsed
-                          ? ""
-                          : "rotate-90"
+                        ? ""
+                        : "rotate-90"
                         }`}
                     />
                   </button>

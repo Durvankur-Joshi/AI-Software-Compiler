@@ -10,6 +10,7 @@ from app.pipeline.retry_handler import RetryHandler
 from app.monitoring.metrics import MetricsTracker
 from app.runtime.execution_validator import ExecutionValidator
 from app.runtime.project_exporter import ProjectExporter
+import uuid
 
 class PipelineOrchestrator:
 
@@ -38,6 +39,8 @@ class PipelineOrchestrator:
         self.project_exporter = ProjectExporter()
 
     def run(self, user_prompt: str):
+        
+        project_id = str(uuid.uuid4())[:8]
 
         start_time = self.metrics.start_timer()
 
@@ -196,14 +199,17 @@ class PipelineOrchestrator:
         result["api"] = api_schema
 
         self.backend_generator.generate(
-            result
+            result,
+            project_id
         )
         
         execution_report = (
            self.execution_validator.validate()
         )
         
-        zip_path = self.project_exporter.export_backend()
+        zip_path = self.project_exporter.export_backend(
+            project_id
+        )
 
         latency = self.metrics.end_timer(
             start_time
@@ -238,4 +244,6 @@ class PipelineOrchestrator:
           "execution_report": execution_report,
           
           "downloadable_project": zip_path,
+          
+          "project_id": project_id,
 }

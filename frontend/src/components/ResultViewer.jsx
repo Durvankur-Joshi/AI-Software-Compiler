@@ -47,55 +47,55 @@ const ResultViewer = ({ result }) => {
         </div>
         <div className="flex items-center gap-3">
           <a
-            href="http://127.0.0.1:8000/download-backend"
+            href={`http://127.0.0.1:8000/download/${result.project_id}`}
             target="_blank"
             rel="noreferrer"
             className="px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600 transition-colors whitespace-nowrap"
           >
             Download Backend
           </a>
-          <button
-            onClick={handleCopyAll}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-dark-secondary hover:bg-dark-border transition-all duration-300 text-sm whitespace-nowrap"
-          >
-            {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-            <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy All'}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="border-b border-dark-border pb-3 ">
-        <div className="flex">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`group relative px-4 py-3 text-sm font-medium transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${isActive
-                  ? 'text-primary-400 bg-dark-surface'
-                  : 'text-dark-text-secondary hover:text-dark-text hover:bg-dark-surface/50'
-                  }`}
-              >
-                <Icon className={`w-4 h-4 transition-colors ${isActive ? `text-${tab.color}-500` : 'opacity-50'
-                  }`} />
-                {tab.label}
-                {isActive && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary-500 to-accent-purple"></div>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-4 overflow-y-auto custom-scrollbar flex-1">
-        {getTabContent()}
+        <button
+          onClick={handleCopyAll}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-dark-secondary hover:bg-dark-border transition-all duration-300 text-sm whitespace-nowrap"
+        >
+          {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+          <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy All'}</span>
+        </button>
       </div>
     </div>
+
+      {/* Tabs */ }
+  <div className="border-b border-dark-border pb-3 ">
+    <div className="flex">
+      {tabs.map((tab) => {
+        const Icon = tab.icon;
+        const isActive = activeTab === tab.id;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`group relative px-4 py-3 text-sm font-medium transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${isActive
+              ? 'text-primary-400 bg-dark-surface'
+              : 'text-dark-text-secondary hover:text-dark-text hover:bg-dark-surface/50'
+              }`}
+          >
+            <Icon className={`w-4 h-4 transition-colors ${isActive ? `text-${tab.color}-500` : 'opacity-50'
+              }`} />
+            {tab.label}
+            {isActive && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary-500 to-accent-purple"></div>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+
+  {/* Content */ }
+  <div className="p-4 overflow-y-auto custom-scrollbar flex-1">
+    {getTabContent()}
+  </div>
+    </div >
   );
 };
 

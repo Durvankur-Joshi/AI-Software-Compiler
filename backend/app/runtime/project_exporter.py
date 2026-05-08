@@ -1,14 +1,15 @@
 import shutil
-import os
 
 
 class ProjectExporter:
 
-    def export_backend(self):
+    def export_backend(self, project_id):
 
-        output_zip = "generated_backend"
+        output_zip = f"generated/{project_id}"
 
-        generated_path = "generated/backend"
+        generated_path = (
+            f"generated/{project_id}/backend"
+        )
 
         zip_path = shutil.make_archive(
             output_zip,

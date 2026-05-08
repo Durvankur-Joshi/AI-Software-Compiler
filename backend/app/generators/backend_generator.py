@@ -1,35 +1,43 @@
 import os
+import zipfile
 
 
 class BackendGenerator:
 
-    def generate(self, result):
+    def generate(self, result, project_id):
 
-        os.makedirs(
-            "generated/backend/routes",
-            exist_ok=True
-        )
+        base_path = f"generated/{project_id}/backend"
 
-        os.makedirs(
-            "generated/backend/models",
-            exist_ok=True
-        )
+        routes_path = f"{base_path}/routes"
+        models_path = f"{base_path}/models"
 
-        self.generate_database_file()
+        os.makedirs(routes_path, exist_ok=True)
+        os.makedirs(models_path, exist_ok=True)
+
+        self.generate_database_file(base_path)
 
         self.generate_models(
-            result["database"]
+            database_schema=result["database"],
+            base_path=base_path
         )
 
         self.generate_routes(
-            result["api"]
+            api_schema=result["api"],
+            base_path=base_path
         )
 
         self.generate_main_file(
-            result["api"]
+            api_schema=result["api"],
+            base_path=base_path
         )
 
-    def generate_database_file(self):
+        self.generate_requirements_file(
+            base_path=base_path
+        )
+
+        self.create_zip(project_id)
+
+    def generate_database_file(self, base_path):
 
         content = """
 from sqlalchemy import create_engine
@@ -53,7 +61,7 @@ Base = declarative_base()
 """
 
         with open(
-            "generated/backend/database.py",
+            f"{base_path}/database.py",
             "w",
             encoding="utf-8"
         ) as file:
@@ -62,7 +70,8 @@ Base = declarative_base()
 
     def generate_models(
         self,
-        database_schema
+        database_schema,
+        base_path
     ):
 
         for table in database_schema.get(
@@ -107,7 +116,7 @@ Base = declarative_base()
 
             model_code = f'''
 from sqlalchemy import Column, Integer, String, Boolean
-from app.database import Base
+from database import Base
 
 
 class {class_name}(Base):
@@ -118,7 +127,7 @@ class {class_name}(Base):
 '''
 
             with open(
-                f'generated/backend/models/{table["table_name"]}.py',
+                f'{base_path}/models/{table["table_name"]}.py',
                 "w",
                 encoding="utf-8"
             ) as file:
@@ -127,7 +136,8 @@ class {class_name}(Base):
 
     def generate_routes(
         self,
-        api_schema
+        api_schema,
+        base_path
     ):
 
         grouped_routes = {}
@@ -186,7 +196,7 @@ def {function_name}():
 '''
 
             with open(
-                f"generated/backend/routes/{route_group}.py",
+                f"{base_path}/routes/{route_group}.py",
                 "w",
                 encoding="utf-8"
             ) as file:
@@ -195,7 +205,8 @@ def {function_name}():
 
     def generate_main_file(
         self,
-        api_schema
+        api_schema,
+        base_path
     ):
 
         route_groups = set()
@@ -246,9 +257,62 @@ def root():
 '''
 
         with open(
-            "generated/backend/main.py",
+            f"{base_path}/main.py",
             "w",
             encoding="utf-8"
         ) as file:
 
             file.write(main_code)
+
+    def generate_requirements_file(
+        self,
+        base_path
+    ):
+
+        requirements = """
+fastapi
+uvicorn
+sqlalchemy
+"""
+
+        with open(
+            f"{base_path}/requirements.txt",
+            "w",
+            encoding="utf-8"
+        ) as file:
+
+            file.write(requirements)
+
+    def create_zip(
+        self,
+        project_id
+    ):
+
+        folder_path = f"generated/{project_id}"
+
+        zip_path = f"generated/{project_id}.zip"
+
+        with zipfile.ZipFile(
+            zip_path,
+            "w",
+            zipfile.ZIP_DEFLATED
+        ) as zipf:
+
+            for root, dirs, files in os.walk(folder_path):
+
+                for file in files:
+
+                    file_path = os.path.join(
+                        root,
+                        file
+                    )
+
+                    arcname = os.path.relpath(
+                        file_path,
+                        folder_path
+                    )
+
+                    zipf.write(
+                        file_path,
+                        arcname
+                    )
