@@ -7,7 +7,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 120000, // 2 minutes timeout for LLM generation
+  timeout: 300000, // 2 minutes timeout for LLM generation
 });
 
 export const generateBackend = async (prompt) => {
