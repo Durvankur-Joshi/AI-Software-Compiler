@@ -1,77 +1,113 @@
 Directory structure:
 └── AI Software Compiler/
-    └── backend/
+    ├── backend/
+    │   ├── README.md
+    │   ├── requirements.txt
+    │   ├── app/
+    │   │   ├── main.py
+    │   │   ├── core/
+    │   │   │   ├── config.py
+    │   │   │   ├── database.py
+    │   │   │   └── logging.py
+    │   │   ├── evaluation/
+    │   │   │   ├── benchmark.py
+    │   │   │   ├── dataset.py
+    │   │   │   ├── metrics.py
+    │   │   │   ├── prompts.py
+    │   │   │   └── runner.py
+    │   │   ├── generators/
+    │   │   │   └── backend_generator.py
+    │   │   ├── monitoring/
+    │   │   │   └── metrics.py
+    │   │   ├── pipeline/
+    │   │   │   ├── clarification_engine.py
+    │   │   │   ├── compiler_agent.py
+    │   │   │   ├── json_repair.py
+    │   │   │   ├── orchestrator.py
+    │   │   │   ├── regeneration_engine.py
+    │   │   │   ├── repair_engine.py
+    │   │   │   ├── retry_handler.py
+    │   │   │   ├── runtime_executor.py
+    │   │   │   └── validator.py
+    │   │   ├── prompts/
+    │   │   │   ├── intent_prompt.py
+    │   │   │   ├── planner_prompt.py
+    │   │   │   ├── repair_prompt.py
+    │   │   │   └── schema_prompt.py
+    │   │   ├── routes/
+    │   │   │   └── generate.py
+    │   │   ├── runtime/
+    │   │   │   └── sqlite_runtime.py
+    │   │   ├── schemas/
+    │   │   │   ├── api_schema.py
+    │   │   │   ├── architecture_schema.py
+    │   │   │   ├── auth_schema.py
+    │   │   │   ├── db_schema.py
+    │   │   │   ├── final_output_schema.py
+    │   │   │   ├── intent_schema.py
+    │   │   │   └── ui_schema.py
+    │   │   ├── services/
+    │   │   │   ├── gemini_service.py
+    │   │   │   ├── json_parser.py
+    │   │   │   └── supabase_service.py
+    │   │   └── utils/
+    │   │       ├── consistency.py
+    │   │       ├── helpers.py
+    │   │       └── retry.py
+    │   └── generated/
+    │       └── backend/
+    │           ├── database.py
+    │           ├── main.py
+    │           ├── models/
+    │           │   ├── activities.py
+    │           │   ├── analytics.py
+    │           │   ├── analytics_data.py
+    │           │   ├── appointments.py
+    │           │   ├── contacts.py
+    │           │   ├── doctors.py
+    │           │   ├── medical_records.py
+    │           │   ├── patients.py
+    │           │   ├── projects.py
+    │           │   ├── subscriptions.py
+    │           │   ├── tasks.py
+    │           │   ├── team_memberships.py
+    │           │   ├── teams.py
+    │           │   └── users.py
+    │           └── routes/
+    │               ├── admin.py
+    │               ├── analytics.py
+    │               ├── appointments.py
+    │               ├── auth.py
+    │               ├── contacts.py
+    │               ├── dashboard.py
+    │               ├── doctors.py
+    │               ├── medical-records.py
+    │               ├── patients.py
+    │               ├── projects.py
+    │               ├── subscriptions.py
+    │               ├── tasks.py
+    │               ├── teams.py
+    │               └── users.py
+    └── frontend/
         ├── README.md
-        ├── requirements.txt
-        ├── app/
-        │   ├── main.py
-        │   ├── core/
-        │   │   ├── config.py
-        │   │   ├── database.py
-        │   │   └── logging.py
-        │   ├── evaluation/
-        │   │   ├── benchmark.py
-        │   │   ├── dataset.py
-        │   │   ├── metrics.py
-        │   │   ├── prompts.py
-        │   │   └── runner.py
-        │   ├── generators/
-        │   │   └── backend_generator.py
-        │   ├── monitoring/
-        │   │   └── metrics.py
-        │   ├── pipeline/
-        │   │   ├── clarification_engine.py
-        │   │   ├── compiler_agent.py
-        │   │   ├── json_repair.py
-        │   │   ├── orchestrator.py
-        │   │   ├── regeneration_engine.py
-        │   │   ├── repair_engine.py
-        │   │   ├── retry_handler.py
-        │   │   ├── runtime_executor.py
-        │   │   └── validator.py
-        │   ├── prompts/
-        │   │   ├── intent_prompt.py
-        │   │   ├── planner_prompt.py
-        │   │   ├── repair_prompt.py
-        │   │   └── schema_prompt.py
-        │   ├── routes/
-        │   │   └── generate.py
-        │   ├── runtime/
-        │   │   └── sqlite_runtime.py
-        │   ├── schemas/
-        │   │   ├── api_schema.py
-        │   │   ├── architecture_schema.py
-        │   │   ├── auth_schema.py
-        │   │   ├── db_schema.py
-        │   │   ├── final_output_schema.py
-        │   │   ├── intent_schema.py
-        │   │   └── ui_schema.py
-        │   ├── services/
-        │   │   ├── gemini_service.py
-        │   │   ├── json_parser.py
-        │   │   └── supabase_service.py
-        │   └── utils/
-        │       ├── consistency.py
-        │       ├── helpers.py
-        │       └── retry.py
-        └── generated/
-            └── backend/
-                ├── database.py
-                ├── main.py
-                ├── models/
-                │   ├── activities.py
-                │   ├── analytics.py
-                │   ├── analytics_data.py
-                │   ├── contacts.py
-                │   ├── subscriptions.py
-                │   └── users.py
-                └── routes/
-                    ├── admin.py
-                    ├── analytics.py
-                    ├── auth.py
-                    ├── contacts.py
-                    ├── dashboard.py
-                    └── subscriptions.py
+        ├── eslint.config.js
+        ├── index.html
+        ├── package.json
+        ├── postcss.config.js
+        ├── tailwind.config.js
+        ├── vite.config.js
+        └── src/
+            ├── App.css
+            ├── App.jsx
+            ├── index.css
+            ├── main.jsx
+            ├── components/
+            │   ├── ClarificationBox.jsx
+            │   ├── MetricsPanel.jsx
+            │   ├── PromptForm.jsx
+            │   └── ResultViewer.jsx
+            └── services/
+                └── api.js
 
 ================================================
 FILE: backend/README.md
@@ -1979,19 +2015,19 @@ FILE: backend/generated/backend/main.py
 
 from fastapi import FastAPI
 
-from routes import admin
-from routes import analytics
-from routes import contacts
-from routes import dashboard
+from routes import tasks
 from routes import auth
+from routes import projects
+from routes import teams
+from routes import users
 
 app = FastAPI()
 
-app.include_router(admin.router)
-app.include_router(analytics.router)
-app.include_router(contacts.router)
-app.include_router(dashboard.router)
+app.include_router(tasks.router)
 app.include_router(auth.router)
+app.include_router(projects.router)
+app.include_router(teams.router)
+app.include_router(users.router)
 
 
 @app.get("/")
@@ -2056,9 +2092,31 @@ class Analytics_data(Base):
     __tablename__ = "analytics_data"
 
     id = Column(Integer, primary_key=True, index=True)
+    date = Column(String)
     metric_name = Column(String)
     metric_value = Column(String)
-    date = Column(String)
+    user_id = Column(String)
+
+
+
+================================================
+FILE: backend/generated/backend/models/appointments.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
+
+
+class Appointments(Base):
+
+    __tablename__ = "appointments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(String)
+    doctor_id = Column(String)
+    appointment_datetime = Column(String)
+    reason = Column(String)
+    status = Column(String)
 
 
 
@@ -2080,7 +2138,95 @@ class Contacts(Base):
     email = Column(String)
     phone = Column(String)
     company = Column(String)
-    created_by_user_id = Column(String)
+    user_id = Column(String)
+
+
+
+================================================
+FILE: backend/generated/backend/models/doctors.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
+
+
+class Doctors(Base):
+
+    __tablename__ = "doctors"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String)
+    first_name = Column(String)
+    last_name = Column(String)
+    specialization = Column(String)
+    contact_number = Column(String)
+    email = Column(String)
+
+
+
+================================================
+FILE: backend/generated/backend/models/medical_records.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
+
+
+class Medical_records(Base):
+
+    __tablename__ = "medical_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(String)
+    doctor_id = Column(String)
+    record_date = Column(String)
+    diagnosis = Column(String)
+    prescription = Column(String)
+    notes = Column(String)
+
+
+
+================================================
+FILE: backend/generated/backend/models/patients.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
+
+
+class Patients(Base):
+
+    __tablename__ = "patients"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String)
+    first_name = Column(String)
+    last_name = Column(String)
+    date_of_birth = Column(String)
+    gender = Column(String)
+    contact_number = Column(String)
+    email = Column(String)
+    address = Column(String)
+
+
+
+================================================
+FILE: backend/generated/backend/models/projects.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
+
+
+class Projects(Base):
+
+    __tablename__ = "projects"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    description = Column(String)
+    team_id = Column(String)
+    deadline = Column(String)
 
 
 
@@ -2102,6 +2248,64 @@ class Subscriptions(Base):
     start_date = Column(String)
     end_date = Column(String)
     status = Column(String)
+
+
+
+================================================
+FILE: backend/generated/backend/models/tasks.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
+
+
+class Tasks(Base):
+
+    __tablename__ = "tasks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String)
+    description = Column(String)
+    project_id = Column(String)
+    assigned_to_user_id = Column(String)
+    due_date = Column(String)
+    status = Column(String)
+
+
+
+================================================
+FILE: backend/generated/backend/models/team_memberships.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
+
+
+class Team_memberships(Base):
+
+    __tablename__ = "team_memberships"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String)
+    team_id = Column(String)
+
+
+
+================================================
+FILE: backend/generated/backend/models/teams.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from app.database import Base
+
+
+class Teams(Base):
+
+    __tablename__ = "teams"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    description = Column(String)
 
 
 
@@ -2142,8 +2346,8 @@ def get__admin_users():
     }
 
 
-@router.delete("/admin/users/{id}")
-def delete__admin_users_id():
+@router.put("/admin/users/{id}")
+def put__admin_users_id():
 
     return {
         "message": "/admin/users/{id} works"
@@ -2165,6 +2369,56 @@ def get__analytics():
 
     return {
         "message": "/analytics works"
+    }
+
+
+
+================================================
+FILE: backend/generated/backend/routes/appointments.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.post("/appointments")
+def post__appointments():
+
+    return {
+        "message": "/appointments works"
+    }
+
+
+@router.get("/appointments")
+def get__appointments():
+
+    return {
+        "message": "/appointments works"
+    }
+
+
+@router.get("/appointments/{id}")
+def get__appointments_id():
+
+    return {
+        "message": "/appointments/{id} works"
+    }
+
+
+@router.put("/appointments/{id}")
+def put__appointments_id():
+
+    return {
+        "message": "/appointments/{id} works"
+    }
+
+
+@router.delete("/appointments/{id}")
+def delete__appointments_id():
+
+    return {
+        "message": "/appointments/{id} works"
     }
 
 
@@ -2264,6 +2518,206 @@ def get__dashboard():
 
 
 ================================================
+FILE: backend/generated/backend/routes/doctors.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.post("/doctors")
+def post__doctors():
+
+    return {
+        "message": "/doctors works"
+    }
+
+
+@router.get("/doctors")
+def get__doctors():
+
+    return {
+        "message": "/doctors works"
+    }
+
+
+@router.get("/doctors/{id}")
+def get__doctors_id():
+
+    return {
+        "message": "/doctors/{id} works"
+    }
+
+
+@router.put("/doctors/{id}")
+def put__doctors_id():
+
+    return {
+        "message": "/doctors/{id} works"
+    }
+
+
+@router.delete("/doctors/{id}")
+def delete__doctors_id():
+
+    return {
+        "message": "/doctors/{id} works"
+    }
+
+
+
+================================================
+FILE: backend/generated/backend/routes/medical-records.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.post("/medical-records")
+def post__medical-records():
+
+    return {
+        "message": "/medical-records works"
+    }
+
+
+@router.get("/medical-records")
+def get__medical-records():
+
+    return {
+        "message": "/medical-records works"
+    }
+
+
+@router.get("/medical-records/{id}")
+def get__medical-records_id():
+
+    return {
+        "message": "/medical-records/{id} works"
+    }
+
+
+@router.put("/medical-records/{id}")
+def put__medical-records_id():
+
+    return {
+        "message": "/medical-records/{id} works"
+    }
+
+
+@router.delete("/medical-records/{id}")
+def delete__medical-records_id():
+
+    return {
+        "message": "/medical-records/{id} works"
+    }
+
+
+
+================================================
+FILE: backend/generated/backend/routes/patients.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.post("/patients")
+def post__patients():
+
+    return {
+        "message": "/patients works"
+    }
+
+
+@router.get("/patients")
+def get__patients():
+
+    return {
+        "message": "/patients works"
+    }
+
+
+@router.get("/patients/{id}")
+def get__patients_id():
+
+    return {
+        "message": "/patients/{id} works"
+    }
+
+
+@router.put("/patients/{id}")
+def put__patients_id():
+
+    return {
+        "message": "/patients/{id} works"
+    }
+
+
+@router.delete("/patients/{id}")
+def delete__patients_id():
+
+    return {
+        "message": "/patients/{id} works"
+    }
+
+
+
+================================================
+FILE: backend/generated/backend/routes/projects.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.post("/projects")
+def post__projects():
+
+    return {
+        "message": "/projects works"
+    }
+
+
+@router.get("/projects")
+def get__projects():
+
+    return {
+        "message": "/projects works"
+    }
+
+
+@router.get("/projects/{project_id}")
+def get__projects_project_id():
+
+    return {
+        "message": "/projects/{project_id} works"
+    }
+
+
+@router.put("/projects/{project_id}")
+def put__projects_project_id():
+
+    return {
+        "message": "/projects/{project_id} works"
+    }
+
+
+@router.delete("/projects/{project_id}")
+def delete__projects_project_id():
+
+    return {
+        "message": "/projects/{project_id} works"
+    }
+
+
+
+================================================
 FILE: backend/generated/backend/routes/subscriptions.py
 ================================================
 
@@ -2287,4 +2741,1301 @@ def post__subscriptions():
         "message": "/subscriptions works"
     }
 
+
+
+================================================
+FILE: backend/generated/backend/routes/tasks.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.post("/tasks")
+def post__tasks():
+
+    return {
+        "message": "/tasks works"
+    }
+
+
+@router.get("/tasks")
+def get__tasks():
+
+    return {
+        "message": "/tasks works"
+    }
+
+
+@router.get("/tasks/{task_id}")
+def get__tasks_task_id():
+
+    return {
+        "message": "/tasks/{task_id} works"
+    }
+
+
+@router.put("/tasks/{task_id}")
+def put__tasks_task_id():
+
+    return {
+        "message": "/tasks/{task_id} works"
+    }
+
+
+@router.delete("/tasks/{task_id}")
+def delete__tasks_task_id():
+
+    return {
+        "message": "/tasks/{task_id} works"
+    }
+
+
+
+================================================
+FILE: backend/generated/backend/routes/teams.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.post("/teams")
+def post__teams():
+
+    return {
+        "message": "/teams works"
+    }
+
+
+@router.get("/teams")
+def get__teams():
+
+    return {
+        "message": "/teams works"
+    }
+
+
+@router.get("/teams/{team_id}")
+def get__teams_team_id():
+
+    return {
+        "message": "/teams/{team_id} works"
+    }
+
+
+@router.put("/teams/{team_id}")
+def put__teams_team_id():
+
+    return {
+        "message": "/teams/{team_id} works"
+    }
+
+
+@router.delete("/teams/{team_id}")
+def delete__teams_team_id():
+
+    return {
+        "message": "/teams/{team_id} works"
+    }
+
+
+@router.post("/teams/{team_id}/members")
+def post__teams_team_id_members():
+
+    return {
+        "message": "/teams/{team_id}/members works"
+    }
+
+
+@router.get("/teams/{team_id}/members")
+def get__teams_team_id_members():
+
+    return {
+        "message": "/teams/{team_id}/members works"
+    }
+
+
+
+================================================
+FILE: backend/generated/backend/routes/users.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.get("/users")
+def get__users():
+
+    return {
+        "message": "/users works"
+    }
+
+
+@router.get("/users/{user_id}")
+def get__users_user_id():
+
+    return {
+        "message": "/users/{user_id} works"
+    }
+
+
+
+================================================
+FILE: frontend/README.md
+================================================
+# React + Vite
+
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+
+Currently, two official plugins are available:
+
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+
+## React Compiler
+
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+
+
+================================================
+FILE: frontend/eslint.config.js
+================================================
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{js,jsx}'],
+    extends: [
+      js.configs.recommended,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      globals: globals.browser,
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+  },
+])
+
+
+
+================================================
+FILE: frontend/index.html
+================================================
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Software Compiler</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+
+
+================================================
+FILE: frontend/package.json
+================================================
+{
+  "name": "ai-compiler-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "1.16.0",
+    "lucide-react": "^1.14.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "18.2.43",
+    "@types/react-dom": "18.2.17",
+    "@vitejs/plugin-react": "4.7.0",
+    "autoprefixer": "10.5.0",
+    "postcss": "8.5.14",
+    "tailwindcss": "3.4.19",
+    "vite": "5.4.21"
+  }
+}
+
+
+
+================================================
+FILE: frontend/postcss.config.js
+================================================
+export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+
+
+================================================
+FILE: frontend/tailwind.config.js
+================================================
+/** @type {import('tailwindcss').Config} */
+export default {
+  darkMode: 'class',
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        dark: {
+          bg: '#0a0a0a',
+          surface: '#1a1a1a',
+          secondary: '#2a2a2a',
+          border: '#333333',
+          text: '#e0e0e0',
+          'text-secondary': '#a0a0a0',
+        },
+        primary: {
+          50: '#eef2ff',
+          100: '#e0e7ff',
+          200: '#c7d2fe',
+          300: '#a5b4fc',
+          400: '#818cf8',
+          500: '#6366f1',
+          600: '#4f46e5',
+          700: '#4338ca',
+          800: '#3730a3',
+          900: '#312e81',
+        },
+        accent: {
+          purple: '#9333ea',
+          pink: '#ec4899',
+          cyan: '#06b6d4',
+        },
+      },
+      fontFamily: {
+        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      animation: {
+        'slide-up': 'slideUp 0.3s ease-out',
+        'slide-down': 'slideDown 0.3s ease-out',
+        'fade-in': 'fadeIn 0.4s ease-in',
+        'scale-up': 'scaleUp 0.2s ease-out',
+        'glow': 'glow 2s ease-in-out infinite',
+        'float': 'float 3s ease-in-out infinite',
+      },
+      keyframes: {
+        slideUp: {
+          '0%': { transform: 'translateY(20px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        slideDown: {
+          '0%': { transform: 'translateY(-20px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        scaleUp: {
+          '0%': { transform: 'scale(0.95)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        glow: {
+          '0%, 100%': { boxShadow: '0 0 5px rgba(99, 102, 241, 0.5)' },
+          '50%': { boxShadow: '0 0 20px rgba(99, 102, 241, 0.8)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+      },
+      backdropBlur: {
+        xs: '2px',
+      },
+    },
+  },
+  plugins: [],
+}
+
+
+================================================
+FILE: frontend/vite.config.js
+================================================
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 3000,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
+  }
+})
+
+
+================================================
+FILE: frontend/src/App.css
+================================================
+.counter {
+  font-size: 16px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: 2px solid transparent;
+  transition: border-color 0.3s;
+  margin-bottom: 24px;
+
+  &:hover {
+    border-color: var(--accent-border);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+.hero {
+  position: relative;
+
+  .base,
+  .framework,
+  .vite {
+    inset-inline: 0;
+    margin: 0 auto;
+  }
+
+  .base {
+    width: 170px;
+    position: relative;
+    z-index: 0;
+  }
+
+  .framework,
+  .vite {
+    position: absolute;
+  }
+
+  .framework {
+    z-index: 1;
+    top: 34px;
+    height: 28px;
+    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
+      scale(1.4);
+  }
+
+  .vite {
+    z-index: 0;
+    top: 107px;
+    height: 26px;
+    width: auto;
+    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
+      scale(0.8);
+  }
+}
+
+#center {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  place-content: center;
+  place-items: center;
+  flex-grow: 1;
+
+  @media (max-width: 1024px) {
+    padding: 32px 20px 24px;
+    gap: 18px;
+  }
+}
+
+#next-steps {
+  display: flex;
+  border-top: 1px solid var(--border);
+  text-align: left;
+
+  & > div {
+    flex: 1 1 0;
+    padding: 32px;
+    @media (max-width: 1024px) {
+      padding: 24px 20px;
+    }
+  }
+
+  .icon {
+    margin-bottom: 16px;
+    width: 22px;
+    height: 22px;
+  }
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+#docs {
+  border-right: 1px solid var(--border);
+
+  @media (max-width: 1024px) {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+#next-steps ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 8px;
+  margin: 32px 0 0;
+
+  .logo {
+    height: 18px;
+  }
+
+  a {
+    color: var(--text-h);
+    font-size: 16px;
+    border-radius: 6px;
+    background: var(--social-bg);
+    display: flex;
+    padding: 6px 12px;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: box-shadow 0.3s;
+
+    &:hover {
+      box-shadow: var(--shadow);
+    }
+    .button-icon {
+      height: 18px;
+      width: 18px;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    li {
+      flex: 1 1 calc(50% - 8px);
+    }
+
+    a {
+      width: 100%;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+  }
+}
+
+#spacer {
+  height: 88px;
+  border-top: 1px solid var(--border);
+  @media (max-width: 1024px) {
+    height: 48px;
+  }
+}
+
+.ticks {
+  position: relative;
+  width: 100%;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: -4.5px;
+    border: 5px solid transparent;
+  }
+
+  &::before {
+    left: 0;
+    border-left-color: var(--border);
+  }
+  &::after {
+    right: 0;
+    border-right-color: var(--border);
+  }
+}
+
+
+
+================================================
+FILE: frontend/src/App.jsx
+================================================
+Error reading file with 'cp1252': 'charmap' codec can't decode byte 0x8f in position 10647: character maps to <undefined>
+
+
+================================================
+FILE: frontend/src/index.css
+================================================
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-dark-bg text-dark-text;
+  }
+}
+
+@layer components {
+  .json-viewer {
+    @apply bg-dark-secondary text-dark-text p-4 rounded-xl overflow-auto font-mono text-xs border border-dark-border;
+  }
+
+  .glass-effect {
+    @apply bg-dark-surface/80 backdrop-blur-sm border border-dark-border;
+  }
+
+  .gradient-border {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1px;
+    border-radius: 1rem;
+  }
+
+  .gradient-border-inner {
+    @apply bg-dark-surface rounded-xl;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-dark-surface rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-dark-border rounded-full hover:bg-gray-600 transition;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+/* Custom Scrollbar */
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #111827;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
+
+
+================================================
+FILE: frontend/src/main.jsx
+================================================
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.jsx'
+import './index.css'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+)
+
+
+================================================
+FILE: frontend/src/components/ClarificationBox.jsx
+================================================
+import React from 'react';
+import { HelpCircle, Lightbulb, MessageCircle, ArrowRight } from 'lucide-react';
+
+const ClarificationBox = ({ questions }) => {
+  return (
+    <div className="gradient-border">
+      <div className="gradient-border-inner p-6">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-full bg-primary-500/20 flex items-center justify-center">
+                <HelpCircle className="w-6 h-6 text-primary-500" />
+              </div>
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent-purple rounded-full animate-pulse"></div>
+            </div>
+          </div>
+          
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-dark-text mb-2">
+              Additional Information Needed
+            </h3>
+            <p className="text-sm text-dark-text-secondary mb-4">
+              To generate a more accurate and complete backend, please provide the following details:
+            </p>
+            
+            <div className="space-y-3 mb-6">
+              {questions.map((question, idx) => (
+                <div 
+                  key={idx} 
+                  className="flex items-start gap-3 p-3 rounded-lg bg-dark-secondary/50 border border-dark-border animate-slide-down"
+                  style={{ animationDelay: `${idx * 0.1}s` }}
+                >
+                  <div className="flex-shrink-0 mt-0.5">
+                    <div className="w-5 h-5 rounded-full bg-primary-500/20 flex items-center justify-center">
+                      <span className="text-xs text-primary-400 font-mono">{idx + 1}</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-dark-text flex-1">{question}</p>
+                  <ArrowRight className="w-4 h-4 text-dark-text-secondary opacity-50" />
+                </div>
+              ))}
+            </div>
+            
+            <div className="p-4 rounded-lg bg-primary-500/5 border border-primary-500/20">
+              <div className="flex items-start gap-2">
+                <Lightbulb className="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-dark-text-secondary">
+                  <p className="font-medium text-primary-400 mb-1">Pro Tip</p>
+                  <p>Update your prompt with the missing details above and regenerate for better results.</p>
+                  <p className="mt-2 text-primary-400/60">Example: "Build a CRM with authentication (JWT), contact management, analytics dashboard, and subscription billing with Stripe"</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ClarificationBox;
+
+
+================================================
+FILE: frontend/src/components/MetricsPanel.jsx
+================================================
+import React from 'react';
+import { Activity, CheckCircle, XCircle, Clock, TrendingUp, Shield, Zap } from 'lucide-react';
+
+const MetricsPanel = ({ metrics, repairApplied }) => {
+  const stats = [
+    {
+      label: 'Total Requests',
+      value: metrics.total_requests || 0,
+      icon: Activity,
+      color: 'primary',
+      change: '+12%',
+    },
+    {
+      label: 'Success Rate',
+      value: `${metrics.success_rate || 0}%`,
+      icon: CheckCircle,
+      color: 'green',
+      change: metrics.success_rate > 80 ? 'Excellent' : 'Good',
+    },
+    {
+      label: 'Avg Latency',
+      value: `${metrics.average_latency || 0}s`,
+      icon: Clock,
+      color: 'cyan',
+      change: 'Real-time',
+    },
+    {
+      label: 'Failures',
+      value: metrics.failed_requests || 0,
+      icon: XCircle,
+      color: 'red',
+      change: metrics.failed_requests === 0 ? 'Perfect' : 'Needs attention',
+    },
+  ];
+
+  return (
+    <div className="space-y-4 animate-slide-up">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat, idx) => {
+          const Icon = stat.icon;
+          const colorClasses = {
+            primary: 'from-primary-600/20 to-primary-700/20 border-primary-500/30',
+            green: 'from-green-600/20 to-green-700/20 border-green-500/30',
+            cyan: 'from-cyan-600/20 to-cyan-700/20 border-cyan-500/30',
+            red: 'from-red-600/20 to-red-700/20 border-red-500/30',
+          };
+          
+          return (
+            <div
+              key={idx}
+              className={`relative overflow-hidden rounded-xl border bg-gradient-to-br ${colorClasses[stat.color]} p-4 transition-all duration-300 hover:scale-[1.02]`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <Icon className={`w-5 h-5 text-${stat.color}-500`} />
+                <span className="text-xs font-mono text-dark-text-secondary">{stat.change}</span>
+              </div>
+              <p className="text-2xl font-bold text-dark-text">{stat.value}</p>
+              <p className="text-xs text-dark-text-secondary mt-1">{stat.label}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* System Status */}
+      <div className="flex flex-wrap gap-3 items-center justify-between p-4 rounded-xl bg-dark-surface/50 border border-dark-border">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse-ring"></div>
+            <div className="w-2 h-2 bg-green-500 rounded-full absolute inset-0 animate-ping"></div>
+          </div>
+          <span className="text-sm font-mono">System Operational</span>
+          <span className="text-xs text-dark-text-secondary">â€¢</span>
+          <div className="flex items-center gap-1">
+            <Zap className="w-3 h-3 text-primary-500" />
+            <span className="text-xs text-dark-text-secondary">Gemini AI Active</span>
+          </div>
+        </div>
+        
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-300 ${
+          repairApplied ? 'bg-orange-500/10 border border-orange-500/30' : 'bg-green-500/10 border border-green-500/30'
+        }`}>
+          <Shield className={`w-4 h-4 ${repairApplied ? 'text-orange-500' : 'text-green-500'}`} />
+          <span className={`text-xs font-medium ${repairApplied ? 'text-orange-400' : 'text-green-400'}`}>
+            {repairApplied ? 'Auto-Repair Applied' : 'Validation Passed'}
+          </span>
+        </div>
+      </div>
+
+      {/* Performance Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="p-3 rounded-lg bg-dark-secondary/50 border border-dark-border">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-mono text-dark-text-secondary">Response Time</span>
+            <TrendingUp className="w-3 h-3 text-green-500" />
+          </div>
+          <div className="h-1.5 bg-dark-border rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-primary-500 to-accent-purple rounded-full transition-all duration-1000"
+              style={{ width: `${Math.min(100, (metrics.average_latency || 0) * 10)}%` }}
+            ></div>
+          </div>
+          <div className="flex justify-between mt-1">
+            <span className="text-[10px] text-dark-text-secondary">0s</span>
+            <span className="text-[10px] text-dark-text-secondary">5s</span>
+            <span className="text-[10px] text-dark-text-secondary">10s</span>
+          </div>
+        </div>
+        
+        <div className="p-3 rounded-lg bg-dark-secondary/50 border border-dark-border">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-mono text-dark-text-secondary">Success Rate</span>
+            <span className="text-xs text-green-500">{metrics.success_rate || 0}%</span>
+          </div>
+          <div className="h-1.5 bg-dark-border rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-green-500 to-primary-500 rounded-full transition-all duration-1000"
+              style={{ width: `${metrics.success_rate || 0}%` }}
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MetricsPanel;
+
+
+================================================
+FILE: frontend/src/components/PromptForm.jsx
+================================================
+import React, { useState } from 'react';
+import { Send, Loader2, Lightbulb, Code, Zap } from 'lucide-react';
+
+const PromptForm = ({ onSubmit, loading }) => {
+  const [prompt, setPrompt] = useState('');
+  const [focused, setFocused] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (prompt.trim() && !loading) {
+      onSubmit(prompt.trim());
+    }
+  };
+
+  const examples = [
+    { text: "Build a CRM with login, contacts, dashboard, analytics, and subscriptions", icon: "📊" },
+    { text: "Create an e-commerce platform with products, cart, checkout, and payments", icon: "🛒" },
+    { text: "Build a hospital management system with doctors, patients, and appointments", icon: "🏥" },
+    { text: "Create a task management tool with teams, projects, and deadlines", icon: "✅" }
+  ];
+
+  const handleExampleClick = (example) => {
+    setPrompt(example);
+  };
+
+  const getCharacterCount = () => {
+    const count = prompt.length;
+    if (count === 0) return '';
+    if (count < 50) return 'short';
+    if (count < 200) return 'good';
+    return 'excellent';
+  };
+
+  return (
+    <div className="gradient-border">
+      <div className="gradient-border-inner p-6">
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <div className={`flex items-center justify-between mb-2 transition-all duration-300 ${focused ? 'text-primary-400' : 'text-dark-text-secondary'}`}>
+              <label className="text-sm font-medium flex items-center gap-2">
+                <Code className="w-4 h-4" />
+                Describe Your Application
+              </label>
+              {prompt && (
+                <div className="flex items-center gap-1 text-xs">
+                  <Zap className="w-3 h-3" />
+                  <span className={`${
+                    getCharacterCount() === 'short' ? 'text-yellow-500' :
+                    getCharacterCount() === 'good' ? 'text-green-500' : 'text-primary-500'
+                  }`}>
+                    {prompt.length} characters
+                  </span>
+                </div>
+              )}
+            </div>
+            
+            <textarea
+              id="prompt"
+              rows="5"
+              className={`w-full px-4 py-3 bg-dark-secondary border rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none font-mono text-sm transition-all duration-300 ${
+                focused ? 'border-primary-500/50' : 'border-dark-border'
+              }`}
+              placeholder="Example: Build a modern CRM with user authentication, contact management, activity tracking, analytics dashboard, and subscription billing..."
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              disabled={loading}
+            />
+          </div>
+
+          {/* Quick Tips */}
+          <div className="mb-4 p-3 rounded-lg bg-dark-secondary/50 border border-dark-border">
+            <div className="flex items-center gap-2 mb-2">
+              <Lightbulb className="w-4 h-4 text-primary-500" />
+              <span className="text-xs font-medium text-dark-text-secondary">Pro Tips</span>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs text-dark-text-secondary">
+              <span className="px-2 py-1 rounded bg-dark-surface">✅ Be specific about features</span>
+              <span className="px-2 py-1 rounded bg-dark-surface">👥 Mention user roles</span>
+              <span className="px-2 py-1 rounded bg-dark-surface">📊 Include data requirements</span>
+              <span className="px-2 py-1 rounded bg-dark-surface">🔐 Specify auth needs</span>
+            </div>
+          </div>
+
+          {/* Example Prompts */}
+          <div className="mb-4">
+            <p className="text-xs text-dark-text-secondary mb-2 flex items-center gap-1">
+              <Zap className="w-3 h-3" />
+              Quick Examples
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {examples.map((example, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleExampleClick(example.text)}
+                  className="text-left text-xs bg-dark-secondary hover:bg-dark-border border border-dark-border rounded-lg px-3 py-2 transition-all duration-300 hover:scale-[1.02] hover:border-primary-500/50 group"
+                  disabled={loading}
+                >
+                  <span className="mr-2">{example.icon}</span>
+                  <span className="text-dark-text-secondary group-hover:text-dark-text transition">
+                    {example.text.substring(0, 60)}...
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={!prompt.trim() || loading}
+            className="relative w-full bg-gradient-to-r from-primary-600 to-accent-purple text-white font-semibold py-3 px-4 rounded-xl hover:shadow-lg hover:shadow-primary-500/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+            <div className="relative flex items-center justify-center gap-2">
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Generating...</span>
+                </>
+              ) : (
+                <>
+                  <Send className="w-5 h-5" />
+                  <span>Generate Application</span>
+                </>
+              )}
+            </div>
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default PromptForm;
+
+
+================================================
+FILE: frontend/src/components/ResultViewer.jsx
+================================================
+import React, { useState } from 'react';
+import { Eye, Code2, Copy, Check, Database, Cpu, Shield, Layout, GitBranch, ChevronRight } from 'lucide-react';
+
+const ResultViewer = ({ result }) => {
+  const [activeTab, setActiveTab] = useState('intent');
+  const [copied, setCopied] = useState(false);
+
+  const tabs = [
+    { id: 'intent', label: 'Intent', icon: Cpu, color: 'primary' },
+    { id: 'architecture', label: 'Architecture', icon: GitBranch, color: 'accent-purple' },
+    { id: 'database', label: 'Database', icon: Database, color: 'accent-cyan' },
+    { id: 'api', label: 'API', icon: Code2, color: 'accent-pink' },
+    { id: 'ui', label: 'UI', icon: Layout, color: 'primary' },
+    { id: 'auth', label: 'Auth', icon: Shield, color: 'accent-purple' },
+  ];
+
+  const getTabContent = () => {
+    const data = result[activeTab];
+    if (!data) {
+      return (
+        <div className="text-center py-8 text-dark-text-secondary">
+          <Eye className="w-12 h-12 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">No data available for {activeTab}</p>
+        </div>
+      );
+    }
+    return <JSONViewer data={data} />;
+  };
+
+  const handleCopyAll = () => {
+    navigator.clipboard.writeText(JSON.stringify(result, null, 2));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="glass-effect rounded-xl overflow-hidden border border-dark-border animate-scale-up max-h-[85vh] flex flex-col">
+      {/* Header */}
+      <div className="flex items-center  justify-between p-4 border-b border-dark-border bg-dark-surface/50">
+        <div className="flex items-center gap-2">
+          <Code2 className="w-5 h-5 text-primary-500" />
+          <span className="font-mono text-sm font-medium">Generated Output</span>
+          <span className="text-xs text-dark-text-secondary ml-2">
+            {new Date().toLocaleTimeString()}
+          </span>
+        </div>
+        <button
+          onClick={handleCopyAll}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-dark-secondary hover:bg-dark-border transition-all duration-300 text-sm"
+        >
+          {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+          <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy All'}</span>
+        </button>
+      </div>
+
+      {/* Tabs */}
+      <div className="border-b border-dark-border pb-3 ">
+        <div className="flex">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`group relative px-4 py-3 text-sm font-medium transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${isActive
+                  ? 'text-primary-400 bg-dark-surface'
+                  : 'text-dark-text-secondary hover:text-dark-text hover:bg-dark-surface/50'
+                  }`}
+              >
+                <Icon className={`w-4 h-4 transition-colors ${isActive ? `text-${tab.color}-500` : 'opacity-50'
+                  }`} />
+                {tab.label}
+                {isActive && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary-500 to-accent-purple"></div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-4 overflow-y-auto custom-scrollbar flex-1">
+        {getTabContent()}
+      </div>
+    </div>
+  );
+};
+
+const JSONViewer = ({ data, level = 0, path = "root" }) => {
+  const [collapsed, setCollapsed] = useState({});
+
+  const toggleCollapse = (key) => {
+    setCollapsed((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const formatValue = (value) => {
+    if (typeof value === "string") {
+      return <span className="text-accent-cyan">"{value}"</span>;
+    }
+
+    if (typeof value === "number") {
+      return <span className="text-accent-purple">{value}</span>;
+    }
+
+    if (typeof value === "boolean") {
+      return (
+        <span className="text-primary-500">
+          {value.toString()}
+        </span>
+      );
+    }
+
+    if (value === null) {
+      return (
+        <span className="text-dark-text-secondary">
+          null
+        </span>
+      );
+    }
+
+    return value;
+  };
+
+  // ARRAY
+  if (Array.isArray(data)) {
+    if (data.length === 0) {
+      return (
+        <span className="text-dark-text-secondary">
+          []
+        </span>
+      );
+    }
+
+    return (
+      <div className="pl-4 border-l border-dark-border space-y-2">
+        {data.map((item, idx) => (
+          <div key={`${path}-${idx}`}>
+            <span className="text-dark-text-secondary text-xs mr-2">
+              [{idx}]
+            </span>
+
+            <JSONViewer
+              data={item}
+              level={level + 1}
+              path={`${path}-${idx}`}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // OBJECT
+  if (typeof data === "object" && data !== null) {
+    const entries = Object.entries(data);
+
+    if (entries.length === 0) {
+      return (
+        <span className="text-dark-text-secondary">
+          {"{}"}
+        </span>
+      );
+    }
+
+    return (
+      <div className="space-y-1">
+        {entries.map(([key, value]) => {
+          const uniqueKey = `${path}-${key}`;
+
+          const isComplex =
+            typeof value === "object" &&
+            value !== null;
+
+          const isCollapsed =
+            collapsed[uniqueKey];
+
+          return (
+            <div key={uniqueKey} className="ml-2">
+              <div className="flex items-start gap-2 group">
+
+                {isComplex && (
+                  <button
+                    onClick={() =>
+                      toggleCollapse(uniqueKey)
+                    }
+                    className="mt-0.5 p-0.5 hover:bg-dark-secondary rounded transition"
+                  >
+                    <ChevronRight
+                      className={`w-3 h-3 transition-transform ${isCollapsed
+                          ? ""
+                          : "rotate-90"
+                        }`}
+                    />
+                  </button>
+                )}
+
+                {!isComplex && (
+                  <div className="w-4" />
+                )}
+
+                <span className="text-primary-400 font-mono text-sm">
+                  {key}
+                </span>
+
+                <span className="text-dark-text-secondary">
+                  :
+                </span>
+
+                {!isComplex && (
+                  <div className="flex-1 break-all">
+                    {formatValue(value)}
+                  </div>
+                )}
+              </div>
+
+              {isComplex && !isCollapsed && (
+                <div className="ml-4 mt-1">
+                  <JSONViewer
+                    data={value}
+                    level={level + 1}
+                    path={uniqueKey}
+                  />
+                </div>
+              )}
+
+              {isComplex && isCollapsed && (
+                <div className="ml-6 text-xs text-dark-text-secondary">
+                  {Array.isArray(value)
+                    ? "[...]"
+                    : "{...}"}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return <span>{formatValue(data)}</span>;
+};
+
+export default ResultViewer;
+
+
+================================================
+FILE: frontend/src/services/api.js
+================================================
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 120000, // 2 minutes timeout for LLM generation
+});
+
+export const generateBackend = async (prompt) => {
+  try {
+    const response = await apiClient.post('/generate', {
+      prompt: prompt
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      throw new Error(error.response.data?.detail || error.response.data?.message || 'Generation failed');
+    } else if (error.request) {
+      throw new Error('No response from server. Make sure the backend is running on port 8000');
+    } else {
+      throw new Error(error.message || 'Request failed');
+    }
+  }
+};
+
+export default apiClient;
 

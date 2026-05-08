@@ -85,6 +85,12 @@ Required JSON Structure:
   "auth": {{
     "roles": ["string"],
     "permissions": []
+  }},
+
+  "business_logic": {{
+    "role_rules": ["string"],
+    "premium_features": ["string"],
+    "restrictions": ["string"]
   }}
 }}
 
@@ -98,17 +104,16 @@ Rules:
 6. Return VALID JSON ONLY.
 7. No markdown.
 8. No explanation.
+9. Include business logic rules.
+10. Include role-based restrictions.
+11. Include premium feature gating if applicable.
+12. Restrictions must be human-readable strings.
 """
 
         response = gemini_service.generate_json(prompt)
 
         result = self.json_repair.repair(
             response
-        )
-
-        # Inject fake invalid field for testing
-        result["api"]["endpoints"][0]["request_fields"].append(
-            "fake_field_xyz"
         )
 
         return result

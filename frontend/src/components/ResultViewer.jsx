@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, Code2, Copy, Check, Database, Cpu, Shield, Layout, GitBranch, ChevronRight } from 'lucide-react';
+import { Eye, Code2, Copy, Check, Database, Cpu, Shield, Brain ,Layout, GitBranch, ChevronRight } from 'lucide-react';
 
 const ResultViewer = ({ result }) => {
   const [activeTab, setActiveTab] = useState('intent');
@@ -12,6 +12,7 @@ const ResultViewer = ({ result }) => {
     { id: 'api', label: 'API', icon: Code2, color: 'accent-pink' },
     { id: 'ui', label: 'UI', icon: Layout, color: 'primary' },
     { id: 'auth', label: 'Auth', icon: Shield, color: 'accent-purple' },
+    { id: 'business_logic', label: 'Logic', icon: Brain, color: 'accent-pink'},
   ];
 
   const getTabContent = () => {

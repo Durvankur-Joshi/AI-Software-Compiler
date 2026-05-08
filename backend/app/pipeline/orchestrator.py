@@ -8,7 +8,8 @@ from app.pipeline.clarification_engine import ClarificationEngine
 from app.pipeline.regeneration_engine import RegenerationEngine
 from app.pipeline.retry_handler import RetryHandler
 from app.monitoring.metrics import MetricsTracker
-
+from app.runtime.execution_validator import ExecutionValidator
+from app.runtime.project_exporter import ProjectExporter
 
 class PipelineOrchestrator:
 
@@ -31,6 +32,8 @@ class PipelineOrchestrator:
         self.retry_handler = RetryHandler()
 
         self.metrics = MetricsTracker()
+        
+        self.execution_validator = ExecutionValidator()
 
     def run(self, user_prompt: str):
 
@@ -80,12 +83,18 @@ class PipelineOrchestrator:
         ui_schema = result["ui"]
 
         auth_schema = result["auth"]
+        
+        business_logic = result.get(
+           "business_logic",
+           {}
+        )
 
         validation_errors = self.validator.validate(
             database_schema=db_schema,
             api_schema=api_schema,
             ui_schema=ui_schema,
-            auth_schema=auth_schema
+            auth_schema=auth_schema,
+            business_logic= business_logic,
         )
 
         repaired = False
@@ -168,6 +177,8 @@ class PipelineOrchestrator:
                 "ui_schema": ui_schema,
 
                 "auth_schema": auth_schema,
+                
+                "business_logic": business_logic,
 
                 "validation_errors": validation_errors,
 
@@ -185,6 +196,10 @@ class PipelineOrchestrator:
         self.backend_generator.generate(
             result
         )
+        
+        execution_report = (
+           self.execution_validator.validate()
+        )
 
         latency = self.metrics.end_timer(
             start_time
@@ -196,21 +211,25 @@ class PipelineOrchestrator:
 
         return {
 
-            "intent": intent,
+          "intent": intent,
 
-            "architecture": architecture,
+          "architecture": architecture,
 
-            "database": db_schema,
+          "database": db_schema,
 
-            "api": api_schema,
+          "api": api_schema,
 
-            "ui": ui_schema,
+          "ui": ui_schema,
 
-            "auth": auth_schema,
+          "auth": auth_schema,
 
-            "validation_errors": validation_errors,
+          "business_logic": business_logic,
 
-            "repair_applied": repaired,
+          "validation_errors": validation_errors,
 
-            "metrics": self.metrics.get_metrics()
-        }
+          "repair_applied": repaired,
+
+          "metrics": self.metrics.get_metrics(),
+          
+          "execution_report": execution_report,
+}

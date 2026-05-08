@@ -8,7 +8,8 @@ class Analytics_data(Base):
     __tablename__ = "analytics_data"
 
     id = Column(Integer, primary_key=True, index=True)
-    date = Column(String)
-    metric_name = Column(String)
-    metric_value = Column(String)
     user_id = Column(String)
+    date = Column(String)
+    contacts_added = Column(Integer)
+    contacts_updated = Column(Integer)
+    contacts_deleted = Column(Integer)

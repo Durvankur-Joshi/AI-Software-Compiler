@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PromptForm from './components/PromptForm';
 import ResultViewer from './components/ResultViewer';
 import MetricsPanel from './components/MetricsPanel';
+import PipelineFlow from "./components/PipelineFlow";
 import ClarificationBox from './components/ClarificationBox';
 import { generateBackend } from './services/api';
 import { Terminal, Zap,Moon, Sun, Sparkles, Loader2 } from 'lucide-react';
@@ -207,6 +208,8 @@ function App() {
                 </div>
               </div>
             )}
+
+            <PipelineFlow />
 
             {/* Result Viewer */}
             <ResultViewer result={result} />

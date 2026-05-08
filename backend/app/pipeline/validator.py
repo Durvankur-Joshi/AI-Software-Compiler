@@ -5,37 +5,155 @@ class SchemaValidator:
         database_schema,
         api_schema,
         ui_schema,
-        auth_schema
+        auth_schema,
+        business_logic=None
     ):
 
         errors = []
 
-        errors.extend(
-            self.validate_database(
-                database_schema
-            )
+        database_fields = set()
+
+        # DATABASE VALIDATION
+
+        for table in database_schema.get(
+            "tables",
+            []
+        ):
+
+            column_names = []
+
+            for column in table.get(
+                "columns",
+                []
+            ):
+
+                column_name = column.get(
+                    "name"
+                )
+
+                database_fields.add(
+                    column_name
+                )
+
+                column_names.append(
+                    column_name
+                )
+
+            if "id" not in column_names:
+
+                errors.append(
+                    f"Table '{table['table_name']}' missing id field"
+                )
+
+        # API VALIDATION
+
+        for endpoint in api_schema.get(
+            "endpoints",
+            []
+        ):
+
+            for field in endpoint.get(
+                "request_fields",
+                []
+            ):
+
+                if (
+                    field not in database_fields
+                    and field != "password"
+                ):
+
+                    errors.append(
+                        f"API request field '{field}' not found in DB schema"
+                    )
+
+            for field in endpoint.get(
+                "response_fields",
+                []
+            ):
+
+                if (
+                    field not in database_fields
+                    and field not in [
+                        "token",
+                        "message"
+                    ]
+                ):
+
+                    errors.append(
+                        f"API response field '{field}' not found in DB schema"
+                    )
+
+        # UI VALIDATION
+
+        ui_pages = ui_schema.get(
+            "pages",
+            []
         )
 
-        errors.extend(
-            self.validate_api_vs_db(
-                database_schema,
-                api_schema
+        if len(ui_pages) == 0:
+
+            errors.append(
+                "UI schema contains no pages"
             )
+
+        # AUTH VALIDATION
+
+        auth_roles = auth_schema.get(
+            "roles",
+            []
         )
 
-        errors.extend(
-            self.validate_auth_vs_api(
-                api_schema,
-                auth_schema
-            )
-        )
+        if len(auth_roles) == 0:
 
-        errors.extend(
-            self.validate_ui_vs_api(
-                ui_schema,
-                api_schema
+            errors.append(
+                "Auth schema contains no roles"
             )
-        )
+
+        # BUSINESS LOGIC VALIDATION
+
+        if business_logic:
+
+            role_rules = business_logic.get(
+                "role_rules",
+                []
+            )
+
+            restrictions = business_logic.get(
+                "restrictions",
+                []
+            )
+
+            premium_features = business_logic.get(
+                "premium_features",
+                []
+            )
+
+            if not isinstance(
+                role_rules,
+                list
+            ):
+
+                errors.append(
+                    "business_logic.role_rules must be a list"
+                )
+
+            if not isinstance(
+                restrictions,
+                list
+            ):
+
+                errors.append(
+                    "business_logic.restrictions must be a list"
+                )
+
+            if not isinstance(
+                premium_features,
+                list
+            ):
+
+                errors.append(
+                    "business_logic.premium_features must be a list"
+                )
 
         return errors
 
