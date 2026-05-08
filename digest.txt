@@ -58,7 +58,25 @@ Directory structure:
     │   │       ├── helpers.py
     │   │       └── retry.py
     │   └── generated/
+    │       ├── 84139a06.zip
     │       ├── cbc2f816.zip
+    │       ├── 84139a06/
+    │       │   └── backend/
+    │       │       ├── database.py
+    │       │       ├── main.py
+    │       │       ├── requirements.txt
+    │       │       ├── models/
+    │       │       │   ├── analytics_data.py
+    │       │       │   ├── contacts.py
+    │       │       │   ├── subscriptions.py
+    │       │       │   └── users.py
+    │       │       └── routes/
+    │       │           ├── admin.py
+    │       │           ├── analytics.py
+    │       │           ├── auth.py
+    │       │           ├── contacts.py
+    │       │           ├── dashboard.py
+    │       │           └── subscriptions.py
     │       └── cbc2f816/
     │           └── backend/
     │               ├── database.py
@@ -1861,16 +1879,24 @@ FILE: backend/app/routes/download.py
 from fastapi import APIRouter
 from fastapi.responses import FileResponse
 
+from app.runtime.project_exporter import ProjectExporter
+
 router = APIRouter()
 
+exporter = ProjectExporter()
 
-@router.get("/download-backend")
-def download_backend():
+
+@router.get("/download/{project_id}")
+def download_backend(project_id: str):
+
+    zip_path = exporter.export_backend(
+        project_id
+    )
 
     return FileResponse(
-        path="generated_backend.zip",
-        filename="generated_backend.zip",
-        media_type="application/zip"
+        path=zip_path,
+        media_type="application/zip",
+        filename=f"{project_id}.zip"
     )
 
 
@@ -2319,9 +2345,322 @@ FILE: backend/app/utils/retry.py
 
 
 ================================================
+FILE: backend/generated/84139a06.zip
+================================================
+[Binary file]
+
+
+================================================
 FILE: backend/generated/cbc2f816.zip
 ================================================
 [Binary file]
+
+
+================================================
+FILE: backend/generated/84139a06/backend/database.py
+================================================
+
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+DATABASE_URL = "sqlite:///./generated_app.db"
+
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False}
+)
+
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
+
+Base = declarative_base()
+
+
+
+================================================
+FILE: backend/generated/84139a06/backend/main.py
+================================================
+
+from fastapi import FastAPI
+
+from routes import analytics
+from routes import contacts
+from routes import subscriptions
+from routes import auth
+from routes import admin
+from routes import dashboard
+
+app = FastAPI()
+
+app.include_router(analytics.router)
+app.include_router(contacts.router)
+app.include_router(subscriptions.router)
+app.include_router(auth.router)
+app.include_router(admin.router)
+app.include_router(dashboard.router)
+
+
+@app.get("/")
+def root():
+
+    return {
+        "message": "AI Generated Backend Running"
+    }
+
+
+
+================================================
+FILE: backend/generated/84139a06/backend/requirements.txt
+================================================
+
+fastapi
+uvicorn
+sqlalchemy
+
+
+
+================================================
+FILE: backend/generated/84139a06/backend/models/analytics_data.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from database import Base
+
+
+class Analytics_data(Base):
+
+    __tablename__ = "analytics_data"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String)
+    date = Column(String)
+    contacts_added = Column(Integer)
+    contacts_updated = Column(Integer)
+    contacts_deleted = Column(Integer)
+
+
+
+================================================
+FILE: backend/generated/84139a06/backend/models/contacts.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from database import Base
+
+
+class Contacts(Base):
+
+    __tablename__ = "contacts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String)
+    first_name = Column(String)
+    last_name = Column(String)
+    email = Column(String)
+    phone = Column(String)
+    company = Column(String)
+    status = Column(String)
+
+
+
+================================================
+FILE: backend/generated/84139a06/backend/models/subscriptions.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from database import Base
+
+
+class Subscriptions(Base):
+
+    __tablename__ = "subscriptions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String)
+    plan_type = Column(String)
+    start_date = Column(String)
+    end_date = Column(String)
+    status = Column(String)
+
+
+
+================================================
+FILE: backend/generated/84139a06/backend/models/users.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from database import Base
+
+
+class Users(Base):
+
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String)
+    password_hash = Column(String)
+    role = Column(String)
+
+
+
+================================================
+FILE: backend/generated/84139a06/backend/routes/admin.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.get("/admin/users")
+def get__admin_users():
+
+    return {
+        "message": "/admin/users works"
+    }
+
+
+
+================================================
+FILE: backend/generated/84139a06/backend/routes/analytics.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.get("/analytics")
+def get__analytics():
+
+    return {
+        "message": "/analytics works"
+    }
+
+
+
+================================================
+FILE: backend/generated/84139a06/backend/routes/auth.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.post("/auth/register")
+def post__auth_register():
+
+    return {
+        "message": "/auth/register works"
+    }
+
+
+@router.post("/auth/login")
+def post__auth_login():
+
+    return {
+        "message": "/auth/login works"
+    }
+
+
+
+================================================
+FILE: backend/generated/84139a06/backend/routes/contacts.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.get("/contacts")
+def get__contacts():
+
+    return {
+        "message": "/contacts works"
+    }
+
+
+@router.post("/contacts")
+def post__contacts():
+
+    return {
+        "message": "/contacts works"
+    }
+
+
+@router.get("/contacts/{id}")
+def get__contacts_id():
+
+    return {
+        "message": "/contacts/{id} works"
+    }
+
+
+@router.put("/contacts/{id}")
+def put__contacts_id():
+
+    return {
+        "message": "/contacts/{id} works"
+    }
+
+
+@router.delete("/contacts/{id}")
+def delete__contacts_id():
+
+    return {
+        "message": "/contacts/{id} works"
+    }
+
+
+
+================================================
+FILE: backend/generated/84139a06/backend/routes/dashboard.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.get("/dashboard")
+def get__dashboard():
+
+    return {
+        "message": "/dashboard works"
+    }
+
+
+
+================================================
+FILE: backend/generated/84139a06/backend/routes/subscriptions.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.get("/subscriptions")
+def get__subscriptions():
+
+    return {
+        "message": "/subscriptions works"
+    }
+
+
+@router.post("/subscriptions")
+def post__subscriptions():
+
+    return {
+        "message": "/subscriptions works"
+    }
+
 
 
 ================================================
