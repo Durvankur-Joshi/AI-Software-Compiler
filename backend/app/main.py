@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes.generate import router
 
+from app.routes import download
+
 
 app = FastAPI(
     title="AI Compiler System"
@@ -20,6 +22,7 @@ app.add_middleware(
 
 
 app.include_router(router)
+app.include_router(download.router)
 
 
 @app.get("/")

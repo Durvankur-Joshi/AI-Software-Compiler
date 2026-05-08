@@ -4,16 +4,16 @@ from fastapi import APIRouter
 router = APIRouter()
 
 
-@router.post("/patients")
-def post__patients():
+@router.get("/patients")
+def get__patients():
 
     return {
         "message": "/patients works"
     }
 
 
-@router.get("/patients")
-def get__patients():
+@router.post("/patients")
+def post__patients():
 
     return {
         "message": "/patients works"

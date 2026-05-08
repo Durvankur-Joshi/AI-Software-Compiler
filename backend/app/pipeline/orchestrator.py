@@ -34,6 +34,8 @@ class PipelineOrchestrator:
         self.metrics = MetricsTracker()
         
         self.execution_validator = ExecutionValidator()
+        
+        self.project_exporter = ProjectExporter()
 
     def run(self, user_prompt: str):
 
@@ -200,6 +202,8 @@ class PipelineOrchestrator:
         execution_report = (
            self.execution_validator.validate()
         )
+        
+        zip_path = self.project_exporter.export_backend()
 
         latency = self.metrics.end_timer(
             start_time
@@ -232,4 +236,6 @@ class PipelineOrchestrator:
           "metrics": self.metrics.get_metrics(),
           
           "execution_report": execution_report,
+          
+          "downloadable_project": zip_path,
 }
