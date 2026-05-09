@@ -88,10 +88,6 @@ function App() {
             </div>
             
             <div className="flex items-center space-x-4">
-              <div className="hidden md:flex items-center space-x-2 text-xs text-dark-text-secondary">
-                <Zap className="w-4 h-4 text-primary-500" />
-                <span>Powered by Gemini AI</span>
-              </div>
               
               <button
                 onClick={() => setDarkMode(!darkMode)}
@@ -249,7 +245,7 @@ function App() {
       <footer className="border-t border-dark-border mt-12 py-6">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-xs text-dark-text-secondary">
-            AI Software Compiler • Real-time backend generation • Powered by Google Gemini AI
+            AI Software Compiler • Real-time backend generation
           </p>
         </div>
       </footer>
