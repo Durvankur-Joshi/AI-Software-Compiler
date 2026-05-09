@@ -3,9 +3,9 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
 
-    GEMINI_API_KEY: str
-    MODEL_NAME: str
-
+    
+    OPENROUTER_API_KEY: str
+    
     SUPABASE_URL: str
     SUPABASE_KEY: str
 

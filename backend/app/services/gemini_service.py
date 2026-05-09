@@ -1,54 +1,65 @@
 import time
-import google.generativeai as genai
+from openai import OpenAI
+
 from app.core.config import settings
 
-genai.configure(
-    api_key=settings.GEMINI_API_KEY
+
+client = OpenAI(
+    api_key=settings.OPENROUTER_API_KEY,
+    base_url="https://openrouter.ai/api/v1"
 )
 
 
 class GeminiService:
-
-    def __init__(self):
-        self.model = genai.GenerativeModel(
-            settings.MODEL_NAME
-        )
 
     def generate_json(
         self,
         prompt: str,
         retries: int = 5
     ):
+
         attempt = 0
 
         while attempt < retries:
+
             try:
-                response = self.model.generate_content(
-                    prompt,
-                    generation_config={
-                        "temperature": 0,
-                        "response_mime_type": "application/json"
-                    }
+
+                response = client.chat.completions.create(
+                    model="inclusionai/ring-2.6-1t:free",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are a strict software compiler system. "
+                                "Always return valid JSON only."
+                            )
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    temperature=0
                 )
-                return response.text
+
+                return response.choices[0].message.content
 
             except Exception as e:
+
                 print(f"\nRetry Attempt {attempt + 1} Failed:")
                 print(str(e))
-
-                if "429" in str(e):
-                    wait_time = 60
-                else:
-                    wait_time = 5 * (attempt + 1)
 
                 attempt += 1
 
                 if attempt >= retries:
                     raise Exception(
-                        f"Gemini failed after {retries} retries"
+                        f"LLM failed after {retries} retries"
                     )
 
+                wait_time = 5 * attempt
+
                 print(f"\nRetrying in {wait_time} seconds...\n")
+
                 time.sleep(wait_time)
 
 

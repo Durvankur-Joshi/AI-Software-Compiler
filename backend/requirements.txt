@@ -7,3 +7,4 @@ python-dotenv
 supabase
 sqlalchemy
 orjson
+openai
