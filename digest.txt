@@ -1,7 +1,8 @@
 Directory structure:
 └── AI Software Compiler/
+    ├── README.md
     ├── backend/
-    │   ├── README.md
+    │   ├── render.yaml
     │   ├── requirements.txt
     │   ├── app/
     │   │   ├── main.py
@@ -12,6 +13,7 @@ Directory structure:
     │   │   ├── evaluation/
     │   │   │   ├── benchmark.py
     │   │   │   ├── dataset.py
+    │   │   │   ├── evaluator.py
     │   │   │   ├── metrics.py
     │   │   │   ├── prompts.py
     │   │   │   └── runner.py
@@ -49,17 +51,28 @@ Directory structure:
     │   │   │   ├── final_output_schema.py
     │   │   │   ├── intent_schema.py
     │   │   │   └── ui_schema.py
-    │   │   ├── services/
-    │   │   │   ├── gemini_service.py
-    │   │   │   ├── json_parser.py
-    │   │   │   └── supabase_service.py
-    │   │   └── utils/
-    │   │       ├── consistency.py
-    │   │       ├── helpers.py
-    │   │       └── retry.py
+    │   │   └── services/
+    │   │       ├── gemini_service.py
+    │   │       └── supabase_service.py
     │   └── generated/
+    │       ├── 129f3a96.zip
     │       ├── 84139a06.zip
+    │       ├── 871e1484.zip
     │       ├── cbc2f816.zip
+    │       ├── 129f3a96/
+    │       │   └── backend/
+    │       │       ├── database.py
+    │       │       ├── main.py
+    │       │       ├── requirements.txt
+    │       │       ├── models/
+    │       │       │   ├── activity_logs.py
+    │       │       │   ├── contacts.py
+    │       │       │   └── users.py
+    │       │       └── routes/
+    │       │           ├── admin.py
+    │       │           ├── auth.py
+    │       │           ├── contacts.py
+    │       │           └── dashboard.py
     │       ├── 84139a06/
     │       │   └── backend/
     │       │       ├── database.py
@@ -77,6 +90,21 @@ Directory structure:
     │       │           ├── contacts.py
     │       │           ├── dashboard.py
     │       │           └── subscriptions.py
+    │       ├── 871e1484/
+    │       │   └── backend/
+    │       │       ├── database.py
+    │       │       ├── main.py
+    │       │       ├── requirements.txt
+    │       │       ├── models/
+    │       │       │   ├── appointments.py
+    │       │       │   ├── doctors.py
+    │       │       │   ├── patients.py
+    │       │       │   └── users.py
+    │       │       └── routes/
+    │       │           ├── appointments.py
+    │       │           ├── auth.py
+    │       │           ├── doctors.py
+    │       │           └── patients.py
     │       └── cbc2f816/
     │           └── backend/
     │               ├── database.py
@@ -117,9 +145,293 @@ Directory structure:
                 └── api.js
 
 ================================================
-FILE: backend/README.md
+FILE: README.md
 ================================================
-[Empty file]
+# AI Software Compiler
+
+An AI-powered multi-stage software generation system that transforms natural language prompts into structured, validated, executable application blueprints.
+
+This project was built for the AI Platform Engineer (Founding Intern) demo task.
+
+---
+
+# Objective
+
+Convert:
+
+Natural Language â†’ Structured Config â†’ Validation â†’ Repair â†’ Runtime Execution
+
+The system behaves like a compiler pipeline for software generation.
+
+---
+
+# Features
+
+- Multi-stage generation pipeline
+- Intent extraction
+- Architecture generation
+- Database schema generation
+- API schema generation
+- UI schema generation
+- Auth + role generation
+- Business logic generation
+- Validation engine
+- JSON repair engine
+- Targeted regeneration
+- Retry handling
+- Clarification system
+- SQLite runtime execution
+- FastAPI backend generation
+- Downloadable generated backend
+- Evaluation framework with metrics
+
+---
+
+# System Architecture
+
+```text
+User Prompt
+     â”‚
+     â–¼
+Compiler Agent
+(Intent + Architecture + Schemas)
+     â”‚
+     â–¼
+JSON Repair Layer
+(Fixes invalid JSON)
+     â”‚
+     â–¼
+Schema Validator
+(Checks consistency)
+     â”‚
+     â–¼
+Repair Engine
+(Fixes hallucinated/missing fields)
+     â”‚
+     â–¼
+Regeneration Engine
+(Regenerates only failing layers)
+     â”‚
+     â–¼
+SQLite Runtime
+(Creates executable DB)
+     â”‚
+     â–¼
+Backend Generator
+(Generates FastAPI backend)
+     â”‚
+     â–¼
+ZIP Export System
+(Downloadable backend project)
+```
+
+---
+
+# Pipeline Stages
+
+## 1. Intent Extraction
+Extracts:
+- app type
+- features
+- user roles
+- permissions
+
+---
+
+## 2. Architecture Design
+Generates:
+- entities
+- modules
+- pages
+- roles
+
+---
+
+## 3. Schema Generation
+Creates:
+- database schema
+- API schema
+- UI schema
+- auth schema
+- business logic rules
+
+---
+
+## 4. Validation Layer
+Checks:
+- valid JSON
+- required fields
+- API â†” DB consistency
+- UI â†” API consistency
+- auth correctness
+
+---
+
+## 5. Repair + Regeneration
+Handles:
+- hallucinated fields
+- missing keys
+- invalid JSON
+- schema mismatches
+
+Uses:
+- targeted regeneration
+- automatic repair
+
+instead of blind retries.
+
+---
+
+# Runtime Execution
+
+The system generates executable FastAPI backend projects including:
+- routes
+- models
+- database
+- runtime app
+
+Generated projects can be downloaded as ZIP files.
+
+---
+
+# Evaluation Framework
+
+The system includes:
+- 10 real-world prompts
+- 10 edge-case prompts
+
+Metrics tracked:
+- success rate
+- failures
+- latency
+- repair frequency
+- clarification frequency
+
+---
+
+# Tech Stack
+
+## Backend
+- FastAPI
+- Python
+- SQLite
+- Supabase
+
+## AI
+- Gemini API
+
+## Frontend
+- React
+- TailwindCSS
+
+---
+
+# Project Structure
+
+```text
+app/
+â”‚
+â”œâ”€â”€ pipeline/
+â”‚   â”œâ”€â”€ compiler_agent.py
+â”‚   â”œâ”€â”€ validator.py
+â”‚   â”œâ”€â”€ repair_engine.py
+â”‚   â”œâ”€â”€ regeneration_engine.py
+â”‚   â”œâ”€â”€ retry_handler.py
+â”‚   â””â”€â”€ clarification_engine.py
+â”‚
+â”œâ”€â”€ runtime/
+â”‚   â””â”€â”€ sqlite_runtime.py
+â”‚
+â”œâ”€â”€ generators/
+â”‚   â””â”€â”€ backend_generator.py
+â”‚
+â”œâ”€â”€ exporters/
+â”‚   â””â”€â”€ project_exporter.py
+â”‚
+â”œâ”€â”€ evaluation/
+â”‚   â”œâ”€â”€ test_dataset.py
+â”‚   â””â”€â”€ evaluator.py
+â”‚
+â””â”€â”€ monitoring/
+    â””â”€â”€ metrics.py
+```
+
+---
+
+# Running The Project
+
+## Backend
+
+```bash
+uvicorn app.main:app --reload
+```
+
+---
+
+## Frontend
+
+```bash
+npm install
+npm run dev
+```
+
+---
+
+# Evaluation Runner
+
+```bash
+python -m app.evaluation.evaluator
+```
+
+---
+
+# Key Engineering Decisions
+
+## Why Multi-Stage Pipeline?
+Improves:
+- reliability
+- modularity
+- controllability
+
+---
+
+## Why Repair Instead of Full Retry?
+Targeted repair reduces:
+- latency
+- token cost
+- instability
+
+---
+
+## Why Runtime Execution?
+Ensures generated outputs are executable and not just theoretical JSON.
+
+---
+
+# Future Improvements
+
+- Full frontend code generation
+- Dockerized runtime
+- Multi-language backend generation
+- Live deployment pipeline
+- Visual workflow editor
+
+---
+
+# Author
+
+Built by Durvankur Joshi
+
+
+================================================
+FILE: backend/render.yaml
+================================================
+services:
+  - type: web
+    name: ai-software-compiler-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port 10000
 
 
 ================================================
@@ -349,7 +661,320 @@ if __name__ == "__main__":
 ================================================
 FILE: backend/app/evaluation/dataset.py
 ================================================
-[Empty file]
+TEST_PROMPTS = [
+
+    # REAL PRODUCT PROMPTS
+
+    {
+        "id": 1,
+        "type": "real",
+        "prompt": "Build a CRM with login, contacts, dashboard, and admin analytics."
+    },
+
+    {
+        "id": 2,
+        "type": "real",
+        "prompt": "Build an e-commerce app with products, cart, payments, and admin panel."
+    },
+
+    {
+        "id": 3,
+        "type": "real",
+        "prompt": "Build a hospital management system with doctors, patients, and appointments."
+    },
+
+    {
+        "id": 4,
+        "type": "real",
+        "prompt": "Build a learning platform with courses, student login, and subscriptions."
+    },
+
+    {
+        "id": 5,
+        "type": "real",
+        "prompt": "Build a task management system with teams and role-based access."
+    },
+
+    {
+        "id": 6,
+        "type": "real",
+        "prompt": "Build a blogging platform with comments and admin moderation."
+    },
+
+    {
+        "id": 7,
+        "type": "real",
+        "prompt": "Build a finance tracker with transactions and analytics dashboard."
+    },
+
+    {
+        "id": 8,
+        "type": "real",
+        "prompt": "Build a recruitment portal with applicants and recruiters."
+    },
+
+    {
+        "id": 9,
+        "type": "real",
+        "prompt": "Build a fitness coaching platform with trainers and subscriptions."
+    },
+
+    {
+        "id": 10,
+        "type": "real",
+        "prompt": "Build a support ticket system with admin escalation."
+    },
+
+    # EDGE CASES
+
+    {
+        "id": 11,
+        "type": "edge",
+        "prompt": "Build something for users."
+    },
+
+    {
+        "id": 12,
+        "type": "edge",
+        "prompt": "Build an app with login but no users."
+    },
+
+    {
+        "id": 13,
+        "type": "edge",
+        "prompt": "Create a dashboard with no database."
+    },
+
+    {
+        "id": 14,
+        "type": "edge",
+        "prompt": "Build a payment system without authentication."
+    },
+
+    {
+        "id": 15,
+        "type": "edge",
+        "prompt": "Build a social media app but no posting system."
+    },
+
+    {
+        "id": 16,
+        "type": "edge",
+        "prompt": "Create an admin panel without admin users."
+    },
+
+    {
+        "id": 17,
+        "type": "edge",
+        "prompt": "Build an app."
+    },
+
+    {
+        "id": 18,
+        "type": "edge",
+        "prompt": "Make a platform with conflicting permissions."
+    },
+
+    {
+        "id": 19,
+        "type": "edge",
+        "prompt": "Build an analytics system without storing data."
+    },
+
+    {
+        "id": 20,
+        "type": "edge",
+        "prompt": "Create a SaaS app with premium access but no subscriptions."
+    }
+]
+
+
+================================================
+FILE: backend/app/evaluation/evaluator.py
+================================================
+import time
+import json
+
+from app.pipeline.orchestrator import PipelineOrchestrator
+from app.evaluation.dataset import TEST_PROMPTS
+
+
+class PipelineEvaluator:
+
+    def __init__(self):
+
+        self.pipeline = PipelineOrchestrator()
+
+        self.results = []
+
+    def evaluate(self):
+
+        total = len(TEST_PROMPTS)
+
+        success_count = 0
+
+        failure_count = 0
+
+        total_latency = 0
+
+        repair_count = 0
+
+        clarification_count = 0
+
+        for test in TEST_PROMPTS:
+
+            prompt_id = test["id"]
+
+            prompt_type = test["type"]
+
+            prompt = test["prompt"]
+
+            print(f"\nRUNNING TEST #{prompt_id}")
+            print(f"TYPE: {prompt_type}")
+            print(f"PROMPT: {prompt}")
+
+            start = time.time()
+
+            try:
+
+                result = self.pipeline.run(prompt)
+
+                latency = round(
+                    time.time() - start,
+                    2
+                )
+
+                total_latency += latency
+
+                success = True
+
+                repair_applied = result.get(
+                    "repair_applied",
+                    False
+                )
+
+                if repair_applied:
+                    repair_count += 1
+
+                if (
+                    result.get("status")
+                    == "clarification_needed"
+                ):
+                    clarification_count += 1
+
+                success_count += 1
+
+                validation_errors = result.get(
+                    "validation_errors",
+                    []
+                )
+
+                self.results.append({
+
+                    "id": prompt_id,
+
+                    "type": prompt_type,
+
+                    "prompt": prompt,
+
+                    "success": success,
+
+                    "latency": latency,
+
+                    "repair_applied": repair_applied,
+
+                    "validation_errors": validation_errors
+                })
+
+                print("SUCCESS")
+                print(f"LATENCY: {latency}s")
+
+            except Exception as e:
+
+                latency = round(
+                    time.time() - start,
+                    2
+                )
+
+                total_latency += latency
+
+                failure_count += 1
+
+                self.results.append({
+
+                    "id": prompt_id,
+
+                    "type": prompt_type,
+
+                    "prompt": prompt,
+
+                    "success": False,
+
+                    "latency": latency,
+
+                    "error": str(e)
+                })
+
+                print("FAILED")
+                print("ERROR:", e)
+
+        average_latency = round(
+            total_latency / total,
+            2
+        )
+
+        success_rate = round(
+            (success_count / total) * 100,
+            2
+        )
+
+        summary = {
+
+            "total_tests": total,
+
+            "successful_tests": success_count,
+
+            "failed_tests": failure_count,
+
+            "success_rate": success_rate,
+
+            "average_latency": average_latency,
+
+            "repair_triggered": repair_count,
+
+            "clarification_requests": clarification_count
+        }
+
+        final_report = {
+
+            "summary": summary,
+
+            "results": self.results
+        }
+
+        with open(
+            "evaluation_report.json",
+            "w",
+            encoding="utf-8"
+        ) as file:
+
+            json.dump(
+                final_report,
+                file,
+                indent=2
+            )
+
+        print("\nEVALUATION COMPLETE")
+        print(json.dumps(summary, indent=2))
+
+        return final_report
+
+
+if __name__ == "__main__":
+
+    evaluator = PipelineEvaluator()
+
+    evaluator.evaluate()
 
 
 ================================================
@@ -2307,12 +2932,6 @@ gemini_service = GeminiService()
 
 
 ================================================
-FILE: backend/app/services/json_parser.py
-================================================
-[Empty file]
-
-
-================================================
 FILE: backend/app/services/supabase_service.py
 ================================================
 from supabase import create_client
@@ -2327,21 +2946,9 @@ supabase = create_client(
 
 
 ================================================
-FILE: backend/app/utils/consistency.py
+FILE: backend/generated/129f3a96.zip
 ================================================
-[Empty file]
-
-
-================================================
-FILE: backend/app/utils/helpers.py
-================================================
-[Empty file]
-
-
-================================================
-FILE: backend/app/utils/retry.py
-================================================
-[Empty file]
+[Binary file]
 
 
 ================================================
@@ -2351,9 +2958,252 @@ FILE: backend/generated/84139a06.zip
 
 
 ================================================
+FILE: backend/generated/871e1484.zip
+================================================
+[Binary file]
+
+
+================================================
 FILE: backend/generated/cbc2f816.zip
 ================================================
 [Binary file]
+
+
+================================================
+FILE: backend/generated/129f3a96/backend/database.py
+================================================
+
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+DATABASE_URL = "sqlite:///./generated_app.db"
+
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False}
+)
+
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
+
+Base = declarative_base()
+
+
+
+================================================
+FILE: backend/generated/129f3a96/backend/main.py
+================================================
+
+from fastapi import FastAPI
+
+from routes import admin
+from routes import contacts
+from routes import auth
+from routes import dashboard
+
+app = FastAPI()
+
+app.include_router(admin.router)
+app.include_router(contacts.router)
+app.include_router(auth.router)
+app.include_router(dashboard.router)
+
+
+@app.get("/")
+def root():
+
+    return {
+        "message": "AI Generated Backend Running"
+    }
+
+
+
+================================================
+FILE: backend/generated/129f3a96/backend/requirements.txt
+================================================
+
+fastapi
+uvicorn
+sqlalchemy
+
+
+
+================================================
+FILE: backend/generated/129f3a96/backend/models/activity_logs.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from database import Base
+
+
+class Activity_logs(Base):
+
+    __tablename__ = "activity_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String)
+    action = Column(String)
+    timestamp = Column(String)
+    details = Column(String)
+
+
+
+================================================
+FILE: backend/generated/129f3a96/backend/models/contacts.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from database import Base
+
+
+class Contacts(Base):
+
+    __tablename__ = "contacts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    first_name = Column(String)
+    last_name = Column(String)
+    email = Column(String)
+    phone = Column(String)
+    company = Column(String)
+    user_id = Column(String)
+
+
+
+================================================
+FILE: backend/generated/129f3a96/backend/models/users.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from database import Base
+
+
+class Users(Base):
+
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String)
+    email = Column(String)
+    password_hash = Column(String)
+    role = Column(String)
+
+
+
+================================================
+FILE: backend/generated/129f3a96/backend/routes/admin.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.get("/admin/analytics")
+def get__admin_analytics():
+
+    return {
+        "message": "/admin/analytics works"
+    }
+
+
+
+================================================
+FILE: backend/generated/129f3a96/backend/routes/auth.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.post("/auth/register")
+def post__auth_register():
+
+    return {
+        "message": "/auth/register works"
+    }
+
+
+@router.post("/auth/login")
+def post__auth_login():
+
+    return {
+        "message": "/auth/login works"
+    }
+
+
+
+================================================
+FILE: backend/generated/129f3a96/backend/routes/contacts.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.get("/contacts")
+def get__contacts():
+
+    return {
+        "message": "/contacts works"
+    }
+
+
+@router.post("/contacts")
+def post__contacts():
+
+    return {
+        "message": "/contacts works"
+    }
+
+
+@router.get("/contacts/{id}")
+def get__contacts_id():
+
+    return {
+        "message": "/contacts/{id} works"
+    }
+
+
+@router.put("/contacts/{id}")
+def put__contacts_id():
+
+    return {
+        "message": "/contacts/{id} works"
+    }
+
+
+@router.delete("/contacts/{id}")
+def delete__contacts_id():
+
+    return {
+        "message": "/contacts/{id} works"
+    }
+
+
+
+================================================
+FILE: backend/generated/129f3a96/backend/routes/dashboard.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.get("/dashboard")
+def get__dashboard():
+
+    return {
+        "message": "/dashboard works"
+    }
+
 
 
 ================================================
@@ -2659,6 +3509,328 @@ def post__subscriptions():
 
     return {
         "message": "/subscriptions works"
+    }
+
+
+
+================================================
+FILE: backend/generated/871e1484/backend/database.py
+================================================
+
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+DATABASE_URL = "sqlite:///./generated_app.db"
+
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False}
+)
+
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
+
+Base = declarative_base()
+
+
+
+================================================
+FILE: backend/generated/871e1484/backend/main.py
+================================================
+
+from fastapi import FastAPI
+
+from routes import patients
+from routes import auth
+from routes import doctors
+from routes import appointments
+
+app = FastAPI()
+
+app.include_router(patients.router)
+app.include_router(auth.router)
+app.include_router(doctors.router)
+app.include_router(appointments.router)
+
+
+@app.get("/")
+def root():
+
+    return {
+        "message": "AI Generated Backend Running"
+    }
+
+
+
+================================================
+FILE: backend/generated/871e1484/backend/requirements.txt
+================================================
+
+fastapi
+uvicorn
+sqlalchemy
+
+
+
+================================================
+FILE: backend/generated/871e1484/backend/models/appointments.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from database import Base
+
+
+class Appointments(Base):
+
+    __tablename__ = "appointments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(String)
+    doctor_id = Column(String)
+    appointment_time = Column(String)
+    status = Column(String)
+
+
+
+================================================
+FILE: backend/generated/871e1484/backend/models/doctors.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from database import Base
+
+
+class Doctors(Base):
+
+    __tablename__ = "doctors"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String)
+    name = Column(String)
+    specialty = Column(String)
+    contact_number = Column(String)
+    email = Column(String)
+
+
+
+================================================
+FILE: backend/generated/871e1484/backend/models/patients.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from database import Base
+
+
+class Patients(Base):
+
+    __tablename__ = "patients"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String)
+    name = Column(String)
+    date_of_birth = Column(String)
+    gender = Column(String)
+    contact_number = Column(String)
+    email = Column(String)
+    address = Column(String)
+
+
+
+================================================
+FILE: backend/generated/871e1484/backend/models/users.py
+================================================
+
+from sqlalchemy import Column, Integer, String, Boolean
+from database import Base
+
+
+class Users(Base):
+
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String)
+    password_hash = Column(String)
+    role = Column(String)
+
+
+
+================================================
+FILE: backend/generated/871e1484/backend/routes/appointments.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.post("/appointments")
+def post__appointments():
+
+    return {
+        "message": "/appointments works"
+    }
+
+
+@router.get("/appointments")
+def get__appointments():
+
+    return {
+        "message": "/appointments works"
+    }
+
+
+@router.get("/appointments/{id}")
+def get__appointments_id():
+
+    return {
+        "message": "/appointments/{id} works"
+    }
+
+
+@router.put("/appointments/{id}")
+def put__appointments_id():
+
+    return {
+        "message": "/appointments/{id} works"
+    }
+
+
+@router.delete("/appointments/{id}")
+def delete__appointments_id():
+
+    return {
+        "message": "/appointments/{id} works"
+    }
+
+
+
+================================================
+FILE: backend/generated/871e1484/backend/routes/auth.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.post("/auth/register")
+def post__auth_register():
+
+    return {
+        "message": "/auth/register works"
+    }
+
+
+@router.post("/auth/login")
+def post__auth_login():
+
+    return {
+        "message": "/auth/login works"
+    }
+
+
+
+================================================
+FILE: backend/generated/871e1484/backend/routes/doctors.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.post("/doctors")
+def post__doctors():
+
+    return {
+        "message": "/doctors works"
+    }
+
+
+@router.get("/doctors")
+def get__doctors():
+
+    return {
+        "message": "/doctors works"
+    }
+
+
+@router.get("/doctors/{id}")
+def get__doctors_id():
+
+    return {
+        "message": "/doctors/{id} works"
+    }
+
+
+@router.put("/doctors/{id}")
+def put__doctors_id():
+
+    return {
+        "message": "/doctors/{id} works"
+    }
+
+
+@router.delete("/doctors/{id}")
+def delete__doctors_id():
+
+    return {
+        "message": "/doctors/{id} works"
+    }
+
+
+
+================================================
+FILE: backend/generated/871e1484/backend/routes/patients.py
+================================================
+
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.post("/patients")
+def post__patients():
+
+    return {
+        "message": "/patients works"
+    }
+
+
+@router.get("/patients")
+def get__patients():
+
+    return {
+        "message": "/patients works"
+    }
+
+
+@router.get("/patients/{id}")
+def get__patients_id():
+
+    return {
+        "message": "/patients/{id} works"
+    }
+
+
+@router.put("/patients/{id}")
+def put__patients_id():
+
+    return {
+        "message": "/patients/{id} works"
+    }
+
+
+@router.delete("/patients/{id}")
+def delete__patients_id():
+
+    return {
+        "message": "/patients/{id} works"
     }
 
 
@@ -3999,7 +5171,7 @@ const ResultViewer = ({ result }) => {
         </div>
         <div className="flex items-center gap-3">
           <a
-            href={`https://ai-software-compiler1.onrender.com//download/${result.project_id}`}
+            href={`https://ai-software-compiler1.onrender.com/download/${result.project_id}`}
             target="_blank"
             rel="noreferrer"
             className="px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600 transition-colors whitespace-nowrap"
@@ -4216,14 +5388,14 @@ FILE: frontend/src/services/api.js
 ================================================
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = 'https://ai-software-compiler1.onrender.com';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 120000, // 2 minutes timeout for LLM generation
+  timeout: 300000, // 2 minutes timeout for LLM generation
 });
 
 export const generateBackend = async (prompt) => {

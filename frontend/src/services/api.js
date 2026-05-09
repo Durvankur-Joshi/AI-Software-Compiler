@@ -20,7 +20,11 @@ export const generateBackend = async (prompt) => {
     if (error.response) {
       throw new Error(error.response.data?.detail || error.response.data?.message || 'Generation failed');
     } else if (error.request) {
-      throw new Error('No response from server. Make sure the backend is running on port 8000');
+      throw new Error(
+        error.response?.data?.detail ||
+        error.message ||
+        'AI generation failed. Please retry in a minute.'
+      );
     } else {
       throw new Error(error.message || 'Request failed');
     }
