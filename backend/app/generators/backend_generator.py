@@ -13,6 +13,12 @@ class BackendGenerator:
 
         os.makedirs(routes_path, exist_ok=True)
         os.makedirs(models_path, exist_ok=True)
+        
+        open(f"{base_path}/__init__.py", "w").close()
+
+        open(f"{routes_path}/__init__.py", "w").close()
+
+        open(f"{models_path}/__init__.py", "w").close()
 
         self.generate_database_file(base_path)
 
@@ -231,7 +237,7 @@ def {function_name}():
         for group in route_groups:
 
             imports.append(
-                f"from routes import {group}"
+                 f"from .routes import {group}"
             )
 
             includes.append(

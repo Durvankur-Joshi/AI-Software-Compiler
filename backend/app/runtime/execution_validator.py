@@ -3,22 +3,24 @@ import os
 
 class ExecutionValidator:
 
-    def validate(self):
+    def validate(self, project_id):
 
         errors = []
 
+        base_path = f"generated/{project_id}/backend"
+
         required_files = [
 
-            "generated/backend/main.py",
+            f"{base_path}/main.py",
 
-            "generated/backend/database.py",
+            f"{base_path}/database.py",
         ]
 
         required_directories = [
 
-            "generated/backend/routes",
+            f"{base_path}/routes",
 
-            "generated/backend/models",
+            f"{base_path}/models",
         ]
 
         for file_path in required_files:
@@ -37,17 +39,21 @@ class ExecutionValidator:
                     f"Missing directory: {directory}"
                 )
 
-        routes_path = "generated/backend/routes"
+        routes_path = f"{base_path}/routes"
 
-        models_path = "generated/backend/models"
+        models_path = f"{base_path}/models"
 
-        route_files = os.listdir(
-            routes_path
-        ) if os.path.exists(routes_path) else []
+        route_files = (
+            os.listdir(routes_path)
+            if os.path.exists(routes_path)
+            else []
+        )
 
-        model_files = os.listdir(
-            models_path
-        ) if os.path.exists(models_path) else []
+        model_files = (
+            os.listdir(models_path)
+            if os.path.exists(models_path)
+            else []
+        )
 
         if len(route_files) == 0:
 

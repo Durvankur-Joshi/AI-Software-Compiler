@@ -1,4 +1,4 @@
-from app.services.gemini_service import gemini_service
+from app.services.service import gemini_service
 
 import json
 

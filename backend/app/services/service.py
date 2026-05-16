@@ -25,7 +25,7 @@ class GeminiService:
             try:
 
                 response = client.chat.completions.create(
-                    model="inclusionai/ring-2.6-1t:free",
+                    model="poolside/laguna-xs.2:free",
                     messages=[
                         {
                             "role": "system",

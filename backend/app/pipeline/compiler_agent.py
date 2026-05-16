@@ -1,6 +1,6 @@
 import json
 
-from app.services.gemini_service import gemini_service
+from app.services.service import gemini_service
 from app.pipeline.json_repair import JSONRepair
 
 

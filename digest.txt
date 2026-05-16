@@ -52,7 +52,7 @@ Directory structure:
     │   │   │   ├── intent_schema.py
     │   │   │   └── ui_schema.py
     │   │   └── services/
-    │   │       ├── gemini_service.py
+    │   │       ├── service.py
     │   │       └── supabase_service.py
     │   └── generated/
     │       ├── 129f3a96.zip
@@ -446,6 +446,7 @@ python-dotenv
 supabase
 sqlalchemy
 orjson
+openai
 
 
 ================================================
@@ -494,9 +495,9 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
 
-    GEMINI_API_KEY: str
-    MODEL_NAME: str
-
+    
+    OPENROUTER_API_KEY: str
+    
     SUPABASE_URL: str
     SUPABASE_KEY: str
 
@@ -1538,7 +1539,7 @@ FILE: backend/app/pipeline/compiler_agent.py
 ================================================
 import json
 
-from app.services.gemini_service import gemini_service
+from app.services.service import gemini_service
 from app.pipeline.json_repair import JSONRepair
 
 
@@ -1967,7 +1968,7 @@ class PipelineOrchestrator:
 ================================================
 FILE: backend/app/pipeline/regeneration_engine.py
 ================================================
-from app.services.gemini_service import gemini_service
+from app.services.service import gemini_service
 
 import json
 
@@ -2535,6 +2536,7 @@ from pydantic import BaseModel
 from app.pipeline.orchestrator import (
     PipelineOrchestrator
 )
+from fastapi import HTTPException
 
 
 router = APIRouter()
@@ -2550,7 +2552,16 @@ class PromptRequest(BaseModel):
 @router.post("/generate")
 def generate(request: PromptRequest):
 
-    return pipeline.run(request.prompt)
+    try:
+
+        return pipeline.run(request.prompt)
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
 
 
 ================================================
@@ -2863,32 +2874,26 @@ class UISchema(BaseModel):
 
 
 ================================================
-FILE: backend/app/services/gemini_service.py
+FILE: backend/app/services/service.py
 ================================================
 import time
-
-import google.generativeai as genai
+from openai import OpenAI
 
 from app.core.config import settings
 
 
-genai.configure(
-    api_key=settings.GEMINI_API_KEY
+client = OpenAI(
+    api_key=settings.OPENROUTER_API_KEY,
+    base_url="https://openrouter.ai/api/v1"
 )
 
 
 class GeminiService:
 
-    def __init__(self):
-
-        self.model = genai.GenerativeModel(
-            settings.MODEL_NAME
-        )
-
     def generate_json(
         self,
         prompt: str,
-        retries: int = 3
+        retries: int = 5
     ):
 
         attempt = 0
@@ -2897,33 +2902,41 @@ class GeminiService:
 
             try:
 
-                response = self.model.generate_content(
-                    prompt,
-                    generation_config={
-                        "temperature": 0,
-                        "response_mime_type": "application/json"
-                    }
+                response = client.chat.completions.create(
+                    model="inclusionai/ring-2.6-1t:free",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are a strict software compiler system. "
+                                "Always return valid JSON only."
+                            )
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    temperature=0
                 )
 
-                return response.text
+                return response.choices[0].message.content
 
             except Exception as e:
 
-                print("\nGEMINI ERROR:\n")
+                print(f"\nRetry Attempt {attempt + 1} Failed:")
                 print(str(e))
 
                 attempt += 1
 
                 if attempt >= retries:
                     raise Exception(
-                        f"Gemini failed after {retries} retries"
+                        f"LLM failed after {retries} retries"
                     )
 
                 wait_time = 5 * attempt
 
-                print(
-                    f"\nRetrying in {wait_time} seconds...\n"
-                )
+                print(f"\nRetrying in {wait_time} seconds...\n")
 
                 time.sleep(wait_time)
 
@@ -4552,7 +4565,7 @@ FILE: frontend/src/App.css
 ================================================
 FILE: frontend/src/App.jsx
 ================================================
-Error reading file with 'cp1252': 'charmap' codec can't decode byte 0x8f in position 10731: character maps to <undefined>
+Error reading file with 'cp1252': 'charmap' codec can't decode byte 0x8f in position 10496: character maps to <undefined>
 
 
 ================================================
@@ -5408,7 +5421,11 @@ export const generateBackend = async (prompt) => {
     if (error.response) {
       throw new Error(error.response.data?.detail || error.response.data?.message || 'Generation failed');
     } else if (error.request) {
-      throw new Error('No response from server. Make sure the backend is running on port 8000');
+      throw new Error(
+        error.response?.data?.detail ||
+        error.message ||
+        'AI generation failed. Please retry in a minute.'
+      );
     } else {
       throw new Error(error.message || 'Request failed');
     }

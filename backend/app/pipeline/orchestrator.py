@@ -204,7 +204,7 @@ class PipelineOrchestrator:
         )
         
         execution_report = (
-           self.execution_validator.validate()
+           self.execution_validator.validate(project_id)
         )
         
         zip_path = self.project_exporter.export_backend(
